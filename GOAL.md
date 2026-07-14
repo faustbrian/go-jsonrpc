@@ -205,6 +205,22 @@ The documentation must be good enough that a new user can:
 
 The package should be tested like a critical runtime dependency.
 
+Meaningful `100%` coverage for production package code is required.
+
+That requirement does not mean “touch every line somehow.” It means tests must
+exercise and prove the behavior of:
+
+- happy paths
+- edge cases
+- malformed inputs
+- branch behavior
+- error paths
+- protocol semantics
+- notification and batch behavior
+
+Coverage games are not acceptable. Hitting lines without proving behavior does
+not satisfy this goal.
+
 Required test coverage includes:
 
 - unit tests for envelope validation and dispatch
@@ -242,6 +258,7 @@ At minimum, pull requests must have automated checks that prove:
 
 - the code builds
 - tests pass
+- meaningful `100%` production-code coverage is maintained
 - formatting is enforced
 - lint and static-analysis gates are green
 - documentation examples do not silently rot
@@ -298,6 +315,7 @@ This goal is achieved when:
 - both server and client usage are production-credible
 - observability and middleware hooks are clean enough for real services
 - protocol conformance is documented and tested
+- meaningful `100%` production-code coverage is documented and enforced
 - GitHub Actions quality gates and release automation are in place
 - user-facing docs are complete enough for direct adoption
 - the repo is suitable for open source publication and external use
