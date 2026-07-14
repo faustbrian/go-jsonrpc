@@ -77,6 +77,11 @@ static-analysis, vulnerability, and benchmark automation.
 - [Quickstart](docs/quickstart.md)
 - [Architecture](docs/architecture.md)
 - [Public API reference](docs/api.md)
+- [Middleware and observability](docs/middleware.md)
+- [Scenario cookbook](docs/cookbook.md)
+- [Adoption guide](docs/adoption.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [FAQ](docs/faq.md)
 
 Runnable programs live under [`examples`](examples).
 
