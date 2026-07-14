@@ -121,10 +121,10 @@ func (client *Client) Call(ctx context.Context, method string, params, result an
 	}
 	var response Response
 	if err := json.Unmarshal(reply, &response); err != nil {
-		return fmt.Errorf("%w: %v", ErrInvalidResponse, err)
+		return fmt.Errorf("%w: %w", ErrInvalidResponse, err)
 	}
 	if err := response.Validate(); err != nil {
-		return fmt.Errorf("%w: %v", ErrInvalidResponse, err)
+		return fmt.Errorf("%w: %w", ErrInvalidResponse, err)
 	}
 	if !request.ID.Equal(response.ID) {
 		return ErrMismatchedID
@@ -136,7 +136,7 @@ func (client *Client) Call(ctx context.Context, method string, params, result an
 		return nil
 	}
 	if err := json.Unmarshal(response.Result, result); err != nil {
-		return fmt.Errorf("%w: result: %v", ErrInvalidResponse, err)
+		return fmt.Errorf("%w: result: %w", ErrInvalidResponse, err)
 	}
 	return nil
 }
@@ -231,12 +231,12 @@ func (client *Client) Batch(ctx context.Context, calls ...*BatchCall) error {
 	}
 	var responses []Response
 	if err := json.Unmarshal(trimmed, &responses); err != nil {
-		return fmt.Errorf("%w: %v", ErrInvalidResponse, err)
+		return fmt.Errorf("%w: %w", ErrInvalidResponse, err)
 	}
 	seen := make(map[string]struct{}, len(responses))
 	for _, response := range responses {
 		if err := response.Validate(); err != nil {
-			return fmt.Errorf("%w: %v", ErrInvalidResponse, err)
+			return fmt.Errorf("%w: %w", ErrInvalidResponse, err)
 		}
 		key := idKey(response.ID)
 		call, ok := pending[key]
@@ -253,7 +253,7 @@ func (client *Client) Batch(ctx context.Context, calls ...*BatchCall) error {
 		}
 		if call.Result != nil {
 			if err := json.Unmarshal(response.Result, call.Result); err != nil {
-				return fmt.Errorf("%w: result: %v", ErrInvalidResponse, err)
+				return fmt.Errorf("%w: result: %w", ErrInvalidResponse, err)
 			}
 		}
 	}

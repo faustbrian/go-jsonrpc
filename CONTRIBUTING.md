@@ -1,80 +1,53 @@
 # Contributing
 
-Contributions are welcome through issues and pull requests. By participating,
-you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+## Before Opening A Change
 
-## Development setup
+Use an issue for changes affecting JSON-RPC protocol behavior, dispatch, transports, middleware, clients, and conformance. Explain the user problem,
+compatibility impact, and why the behavior belongs in this generic package.
 
-Install Go 1.25.12 or newer, clone the repository, then run:
+## Development Setup
 
-```sh
-go test ./...
-scripts/check-coverage.sh
-go test -race ./...
-go vet ./...
-```
+Requirements:
 
-Install the pinned analysis tools used by CI when needed:
+- Go 1.25 or later
+- Git
+- `golangci-lint` v2
 
 ```sh
-go install honnef.co/go/tools/cmd/staticcheck@v0.6.1
-go install golang.org/x/vuln/cmd/govulncheck@v1.6.0
-staticcheck ./...
-govulncheck ./...
+go mod download
+make check
 ```
 
-Format all Go files with `gofmt`. Add or update tests before implementation for
-behavior changes. Tests must prove outcomes and error semantics, not merely
-execute lines to preserve the coverage percentage.
+## Change Requirements
 
-## Pull requests
+- Add regression coverage before fixing a defect.
+- Maintain meaningful 100% production-code coverage.
+- Update public examples and documentation with behavior changes.
+- Update `GOAL.md` or `GOAL_HARDEN.md` when scope or acceptance criteria
+  change.
+- Add an `Unreleased` entry to `CHANGELOG.md`.
+- Explain every dependency addition, upgrade, or removal.
+- Update `NOTICE` and `THIRD_PARTY_NOTICES.md` when attribution changes.
 
-Keep pull requests focused and explain:
+## Package-Specific Review
 
-- the user or protocol problem;
-- why the chosen API and behavior solve it;
-- wire and compatibility implications;
-- tests, fixtures, fuzzing, or benchmarks added;
-- documentation and migration impact.
+Preserve JSON-RPC 2.0 request, notification, ID, batch, response, and error semantics. Every protocol change MUST include conformance and malformed-input evidence.
 
-All CI, fuzz-seed, security, formatting, analysis, race, documentation, and
-coverage checks must pass. Update `CHANGELOG.md` for user-visible changes.
+## Local Verification
 
-## Protocol changes
-
-Protocol changes require exceptional care. Include the relevant JSON-RPC 2.0
-rule, valid and invalid fixtures, notification and batch impact, ID behavior,
-and client/server interoperability reasoning. An intentional specification
-divergence will not be accepted. A compliance fix that changes observable
-behavior must include a regression test and migration note.
-
-## Public API changes
-
-Prefer explicit types and narrow extension points. Avoid new global state,
-transport assumptions in the dispatcher, hidden reflection, or dependencies on
-application infrastructure. Update `docs/api.md`, examples, compatibility notes,
-and benchmarks where relevant.
-
-## Fuzzing and benchmarks
-
-Run the existing targets locally:
+Run the complete local gate:
 
 ```sh
-go test -fuzz=FuzzDispatcher -fuzztime=30s .
-go test -fuzz=FuzzRequestUnmarshal -fuzztime=30s .
-go test -fuzz=FuzzResponseUnmarshal -fuzztime=30s .
-go test -fuzz=FuzzErrorUnmarshal -fuzztime=30s .
-go test -fuzz=FuzzIDRoundTrip -fuzztime=30s .
-go test -fuzz=FuzzClientCorrelation -fuzztime=30s .
-go test -fuzz=FuzzClientBatchCorrelation -fuzztime=30s .
-go test -run='^$' -bench=. -benchmem ./...
+make check
 ```
 
-Commit a minimized regression fixture for every real fuzz-discovered protocol
-bug. Performance changes should report comparable before/after benchmark output
-and must not weaken validation for speed.
+## Commits And Pull Requests
 
-## Reporting security issues
+Use focused conventional commits with a body explaining why the change is
+needed. Pull requests must describe compatibility impact, tests, verification
+commands and results, documentation updates, and changelog updates.
 
-Do not open a public issue for a vulnerability. Follow
-[`SECURITY.md`](SECURITY.md) so maintainers can coordinate a fix and disclosure.
+## Reporting Security Issues
+
+Do not open a public issue for a suspected vulnerability. Follow
+[SECURITY.md](SECURITY.md).

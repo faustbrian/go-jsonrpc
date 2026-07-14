@@ -1,45 +1,79 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-go test ./...
-scripts/generate-llms.py --check
+required=(
+  .gitattributes
+  .gitignore
+  .golangci.yml
+  AGENTS.md
+  CHANGELOG.md
+  CLAUDE.md
+  CODE_OF_CONDUCT.md
+  CONTRIBUTING.md
+  GOAL.md
+  GOAL_HARDEN.md
+  LICENSE
+  Makefile
+  NOTICE
+  README.md
+  ROADMAP.md
+  SECURITY.md
+  THIRD_PARTY_NOTICES.md
+  llms.txt
+  llms-full.txt
+  docs/README.md
+  docs/quickstart.md
+  docs/adoption.md
+  docs/api.md
+  docs/architecture.md
+  docs/examples.md
+  docs/cookbook.md
+  docs/faq.md
+  docs/troubleshooting.md
+  docs/migration.md
+  docs/compatibility.md
+  docs/performance.md
+  docs/hardening.md
+  docs/security.md
+  docs/releasing.md
+  docs/repository-standards.md
+  docs/conformance.md
+  docs/middleware.md
+)
 
-example_output="$(go run ./examples/e2e)"
-if [[ "$example_output" != "42" ]]; then
-  echo "end-to-end example returned unexpected output: $example_output" >&2
-  exit 1
-fi
+for file in "${required[@]}"; do
+  if [[ ! -s "$file" ]]; then
+    echo "required repository file is missing or empty: $file" >&2
+    exit 1
+  fi
+done
 
-python3 <<'PY'
-import pathlib
+python3 - <<'PY'
+from pathlib import Path
 import re
-import subprocess
-import sys
-import urllib.parse
 
-root = pathlib.Path.cwd()
-tracked = subprocess.check_output(
-    ["git", "ls-files", "-z", "*.md"],
-).decode().split("\0")
-link_pattern = re.compile(r"(?<!!)\[[^]]+\]\(([^)]+)\)")
-failures = []
-
-for relative in filter(None, tracked):
-    document = root / relative
-    text = document.read_text()
-    text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
-    text = re.sub(r"`[^`]*`", "", text)
-    for target in link_pattern.findall(text):
-        target = target.strip().strip("<>").split(" ", 1)[0]
+for document in Path(".").rglob("*.md"):
+    content = document.read_text(encoding="utf-8")
+    prose = []
+    in_fence = False
+    for line in content.splitlines():
+        if line.lstrip().startswith(("```", "~~~")):
+            in_fence = not in_fence
+            continue
+        if not in_fence:
+            prose.append(line)
+    for target in re.findall(r"\[[^\]]*\]\(([^)]+)\)", "\n".join(prose)):
         if target.startswith(("http://", "https://", "mailto:", "#")):
             continue
-        path = urllib.parse.unquote(target.split("#", 1)[0])
-        if path and not (document.parent / path).exists():
-            failures.append(f"{relative}: missing Markdown link target {target}")
+        relative = target.split("#", 1)[0]
+        if relative.startswith("<") and relative.endswith(">"):
+            relative = relative[1:-1]
+        resolved = (document.parent / relative).resolve()
+        if not resolved.exists():
+            raise SystemExit(f"broken relative link in {document}: {target}")
 
-if failures:
-    print("\n".join(failures), file=sys.stderr)
-    raise SystemExit(1)
-
-print("Markdown links and runnable examples are valid")
+print("all required files exist and relative Markdown links resolve")
 PY
+
+python3 scripts/generate-llms.py --check
+go test ./... -run '^Example'

@@ -117,7 +117,7 @@ func (transport *HTTPTransport) RoundTrip(ctx context.Context, payload []byte) (
 	if err != nil {
 		return nil, err
 	}
-	defer response.Body.Close()
+	defer func() { _ = response.Body.Close() }()
 	if response.StatusCode == http.StatusNoContent {
 		return nil, nil
 	}

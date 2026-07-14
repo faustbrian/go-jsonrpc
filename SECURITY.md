@@ -1,47 +1,34 @@
-# Security policy
+# Security Policy
 
-## Supported versions
+## Supported Versions
 
-Security fixes target the latest stable major release. Maintainers may also
-patch an older major when impact and adoption justify it. Unsupported versions
-may receive an advisory without a backport.
+Before `v1.0.0`, security fixes are applied to the latest revision of
+`main`. After the first stable release, supported release lines and
+end-of-support dates will be documented here.
 
-| Version | Supported |
-| --- | --- |
-| 1.x | Yes |
-| < 1.0 | No |
-| Unreleased `main` | Best effort |
+## Reporting A Vulnerability
 
-## Report a vulnerability privately
+Use GitHub private vulnerability reporting for this repository. Include a
+minimal reproducer, expected and observed behavior, affected versions, impact,
+and any suggested mitigation. Do not include secrets or production data.
 
-Use the repository's **Security** tab to submit a private vulnerability report
-through GitHub Security Advisories. If that feature is unavailable, contact a
-maintainer privately through their verified GitHub profile and ask for a secure
-reporting channel. Do not include exploit details in a public issue or pull
-request.
+## Response Process
 
-Include the affected version, impact, reproduction steps, relevant payloads,
-and any proposed mitigation. Remove credentials, personal data, and unrelated
-production information.
+Maintainers will acknowledge the report, reproduce and assess it privately,
+coordinate a fix and advisory, and credit the reporter when requested. Public
+disclosure should wait until a fix or agreed mitigation is available.
 
-## Response process
+## Package Security Boundary
 
-Maintainers aim to acknowledge a complete report within three business days,
-provide an initial severity assessment within seven business days, and share a
-remediation plan after reproducing the issue. Timelines may change with
-complexity, but the reporter will receive status updates during investigation.
+Requests, responses, parameters, IDs, batches, transports, and handler error data are untrusted protocol inputs. Body and batch limits are part of the maintained security boundary.
 
-Validated vulnerabilities are fixed on a private branch when possible. The
-release includes tests, an advisory, affected versions, severity, and upgrade
-or mitigation instructions. Disclosure is coordinated with the reporter after
-a fixed release is available, unless active exploitation requires earlier
-notice.
+## Application Responsibilities
 
-## Security boundaries
+Applications remain responsible for transport limits, authentication,
+authorization, rate limiting, deadlines, secret handling, deployment policy,
+and business-level validation. Package safeguards do not replace those
+controls.
 
-The package parses untrusted JSON and crosses application error boundaries.
-Particularly sensitive areas include body-size enforcement, panic containment,
-error-data disclosure, ambiguous protocol members, malformed UTF-8, batch
-amplification, custom transports, header handling, and context cancellation.
-Authentication, authorization, TLS configuration, rate limiting, and
-application validation remain the adopter's responsibility.
+See [docs/security.md](docs/security.md) and
+[docs/hardening.md](docs/hardening.md) for adoption guidance and maintained
+evidence.

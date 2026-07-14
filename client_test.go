@@ -46,18 +46,20 @@ func TestClientCallErrors(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name      string
-		response  string
-		transport error
-		want      error
-		wantRPC   int
+		name       string
+		response   string
+		transport  error
+		want       error
+		wantRPC    int
+		wantSyntax bool
+		wantType   bool
 	}{
 		{name: "transport", transport: errors.New("offline"), want: ErrTransport},
-		{name: "malformed", response: `{`, want: ErrInvalidResponse},
+		{name: "malformed", response: `{`, want: ErrInvalidResponse, wantSyntax: true},
 		{name: "wrong version", response: `{"jsonrpc":"1.0","result":1,"id":1}`, want: ErrInvalidResponse},
 		{name: "wrong id", response: `{"jsonrpc":"2.0","result":1,"id":2}`, want: ErrMismatchedID},
 		{name: "rpc error", response: `{"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid params"},"id":1}`, wantRPC: CodeInvalidParams},
-		{name: "bad result", response: `{"jsonrpc":"2.0","result":"not an int","id":1}`, want: ErrInvalidResponse},
+		{name: "bad result", response: `{"jsonrpc":"2.0","result":"not an int","id":1}`, want: ErrInvalidResponse, wantType: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -76,6 +78,14 @@ func TestClientCallErrors(t *testing.T) {
 			}
 			if !errors.Is(err, tt.want) {
 				t.Errorf("Call() error = %v, want %v", err, tt.want)
+			}
+			var syntaxError *json.SyntaxError
+			if tt.wantSyntax && !errors.As(err, &syntaxError) {
+				t.Errorf("Call() error = %v, want JSON syntax cause", err)
+			}
+			var typeError *json.UnmarshalTypeError
+			if tt.wantType && !errors.As(err, &typeError) {
+				t.Errorf("Call() error = %v, want JSON type cause", err)
 			}
 		})
 	}

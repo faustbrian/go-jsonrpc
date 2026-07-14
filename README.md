@@ -1,23 +1,27 @@
 # go-jsonrpc
 
-`go-jsonrpc` is a transport-neutral JSON-RPC 2.0 server and client package for
-Go. It is designed for production APIs: protocol behavior is explicit, errors
-are auditable, middleware is composable, HTTP is optional, and malformed input
-is covered by conformance and fuzz tests.
+`go-jsonrpc` is a transport-neutral, full JSON-RPC 2.0 server and client
+package. Protocol behavior is explicit, errors are auditable, middleware is
+composable, HTTP is optional, and malformed input is conformance- and
+fuzz-tested.
 
-The stable v1 release provides a SemVer-governed public API. Protocol and wire
-behavior are compatibility-sensitive alongside the exported Go surface.
+## Status
 
-## Install
+The stable v1 API and wire behavior are SemVer-governed. Production package
+code is held to meaningful 100% statement coverage.
+
+## Requirements
+
+- Go 1.25 or later
+- no runtime dependencies outside the standard library
+
+## Installation
 
 ```sh
 go get github.com/faustbrian/go-jsonrpc
 ```
 
-The module requires Go 1.25.12 or newer and has no runtime dependencies outside
-the standard library.
-
-## Quick server
+## Quickstart
 
 ```go
 registry := jsonrpc.NewRegistry()
@@ -29,77 +33,62 @@ err := registry.Register("math.add", func(
     if rpcErr != nil || len(values) != 2 {
         return nil, jsonrpc.InvalidParams()
     }
+
     return values[0] + values[1], nil
 })
 if err != nil {
-    log.Fatal(err)
+    return err
 }
 
 handler := jsonrpc.NewHTTPHandler(jsonrpc.NewDispatcher(registry))
-log.Fatal(http.ListenAndServe(":8080", handler))
 ```
 
-## Quick client
+Use `NewClient` with `NewHTTPTransport` for client calls. The
+[quickstart](docs/quickstart.md) contains complete server, client,
+notification, and batch examples.
 
-```go
-transport, err := jsonrpc.NewHTTPTransport("http://localhost:8080")
-if err != nil {
-    log.Fatal(err)
-}
-client := jsonrpc.NewClient(transport)
+## Package Guarantees
 
-sum, err := jsonrpc.Call[int](context.Background(), client, "math.add", []int{2, 3})
-if err != nil {
-    log.Fatal(err)
-}
-fmt.Println(sum)
-```
-
-## Protocol guarantees
-
-- Requests, notifications, and explicit `null` IDs remain distinct.
-- String, number, and `null` IDs are echoed without coercion.
-- Parse error, invalid request, method not found, invalid params, and internal
-  error responses use the standard codes and shapes.
-- Empty batches produce one invalid-request response; notification-only
-  batches produce no response; mixed batches omit notification responses.
-- Client responses are checked for version, shape, ID correlation, duplicates,
-  missing batch members, and result decoding errors.
-- The core dispatcher accepts bytes and returns bytes, with no HTTP assumption.
-- Direct dispatcher input defaults to four MiB and 1,024 batch members; both
-  limits are configurable without disabling resource bounds.
-- The client independently caps reply parsing at four MiB for built-in and
-  custom transports.
-
-The conformance suite includes the normative JSON-RPC 2.0 examples. Production
-package code is held at meaningful 100% statement coverage, with race, fuzz,
-static-analysis, vulnerability, and benchmark automation.
+- requests, notifications, and explicit null IDs remain distinct
+- string, number, and null IDs round-trip without coercion
+- standard errors use the required codes and response shapes
+- batch and notification-only behavior follows JSON-RPC 2.0
+- clients validate response shape, ID correlation, duplicates, and missing
+  batch members
+- dispatcher and client parsing are independently resource-bounded
+- protocol dispatch remains transport-neutral
 
 ## Documentation
 
-- [Quickstart](docs/quickstart.md)
-- [Architecture](docs/architecture.md)
-- [Public API reference](docs/api.md)
-- [Middleware and observability](docs/middleware.md)
-- [Scenario cookbook](docs/cookbook.md)
-- [Adoption guide](docs/adoption.md)
-- [Troubleshooting](docs/troubleshooting.md)
-- [FAQ](docs/faq.md)
-- [Compatibility policy](docs/compatibility.md)
-- [JSON-RPC conformance matrix](docs/conformance.md)
-- [Hardening report](docs/hardening.md)
-- [Versioning and release guide](docs/releasing.md)
-- [Roadmap](ROADMAP.md)
-- [Changelog](CHANGELOG.md)
+Start with the [documentation index](docs/README.md), [quickstart](docs/quickstart.md),
+[adoption guide](docs/adoption.md), and [API reference](docs/api.md). Use the
+[conformance matrix](docs/conformance.md), [middleware guide](docs/middleware.md),
+and [hardening report](docs/hardening.md) for production review.
 
-AI tools can use the generated [documentation index](llms.txt) or the
-[self-contained documentation bundle](llms-full.txt).
+AI tools can use [llms.txt](llms.txt) and [llms-full.txt](llms-full.txt).
+Release history is maintained in [CHANGELOG.md](CHANGELOG.md).
+Runnable programs live under [examples](examples).
 
-Runnable programs live under [`examples`](examples).
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for development instructions,
-[`SECURITY.md`](SECURITY.md) for private vulnerability reporting, and
-[`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) for community expectations.
+## Development
+
+Run `make check` before submitting a change. This enforces formatting, static
+analysis, race tests, meaningful 100% coverage, fuzz smoke, benchmarks,
+documentation, and vulnerability scanning.
+
+## Contributing
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) and follow the
+[code of conduct](CODE_OF_CONDUCT.md). Protocol and public API changes require
+explicit compatibility analysis.
+
+## Security
+
+Report vulnerabilities privately according to [SECURITY.md](SECURITY.md).
+Review [docs/security.md](docs/security.md) before exposing a dispatcher to
+untrusted clients.
 
 ## License
 
-MIT. See [`LICENSE`](LICENSE).
+`go-jsonrpc` is available under the [MIT License](LICENSE). Attribution and
+third-party policy are recorded in [NOTICE](NOTICE) and
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

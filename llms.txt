@@ -1,26 +1,28 @@
 # go-jsonrpc
 
-> `go-jsonrpc` is a transport-neutral JSON-RPC 2.0 server and client package for Go. It is designed for production APIs: protocol behavior is explicit, errors are auditable, middleware is composable, HTTP is optional, and malformed input is covered by conformance and fuzz tests.
+> Documentation map for package users, adopters, operators, and contributors.
 
-This index is generated from the repository's canonical Markdown documentation.
-
-## Documentation
-
-- [Quickstart](https://raw.githubusercontent.com/faustbrian/go-jsonrpc/main/docs/quickstart.md): Register transport-independent handlers, build a dispatcher, then choose an adapter. A handler receives the request context and raw params so it can choose positional, named, custom, or typed decoding.
-- [Architecture](https://raw.githubusercontent.com/faustbrian/go-jsonrpc/main/docs/architecture.md): The package separates the protocol from every delivery mechanism. The normal server flow is:
-- [Public API reference](https://raw.githubusercontent.com/faustbrian/go-jsonrpc/main/docs/api.md): This is the semantic reference for the exported surface. Exact Go signatures are also available through `go doc github.com/faustbrian/go-jsonrpc`.
-- [Middleware, authentication, and observability](https://raw.githubusercontent.com/faustbrian/go-jsonrpc/main/docs/middleware.md): Dispatcher middleware wraps method execution without changing the transport. It is appropriate for RPC-aware authentication, authorization, logging, tracing, metrics, deadlines, and correlation. Ordinary `net/http` middleware remains the right place for TLS identity, HTTP headers, CORS, or IP controls.
-- [Scenario cookbook](https://raw.githubusercontent.com/faustbrian/go-jsonrpc/main/docs/cookbook.md): `DecodeParams` rejects unknown fields. Use `json.Unmarshal` directly when an API has a deliberate forward-compatible or partially dynamic params object.
-- [Production adoption guide](https://raw.githubusercontent.com/faustbrian/go-jsonrpc/main/docs/adoption.md): Adopt the package at a protocol boundary, not by rewriting business logic at the same time. The sequence below keeps wire compatibility observable and rollback straightforward.
-- [Troubleshooting](https://raw.githubusercontent.com/faustbrian/go-jsonrpc/main/docs/troubleshooting.md): Start by separating HTTP transport failures from JSON-RPC error objects. HTTP statuses other than 200 or 204 indicate the adapter or upstream rejected the exchange. A 200 response may contain either `result` or `error`.
-- [FAQ](https://raw.githubusercontent.com/faustbrian/go-jsonrpc/main/docs/faq.md): No. `Dispatcher` and `Client` depend only on bytes, context, and the `Transport` interface. The package includes HTTP adapters because they are common and easy to compose with `net/http`.
-- [Compatibility policy](https://raw.githubusercontent.com/faustbrian/go-jsonrpc/main/docs/compatibility.md): The project follows [Semantic Versioning](https://semver.org/) for tagged releases. Protocol behavior is compatibility-sensitive even where a Go type or function signature does not change.
-- [JSON-RPC 2.0 conformance matrix](https://raw.githubusercontent.com/faustbrian/go-jsonrpc/main/docs/conformance.md): This matrix maps every normative JSON-RPC 2.0 rule to implementation, test, and documentation evidence. The official [JSON-RPC 2.0 specification](https://www.jsonrpc.org/specification) is authoritative. Defensive JSON policies are labeled separately and do not claim to be additional JSON-RPC requirements.
-- [Hardening report](https://raw.githubusercontent.com/faustbrian/go-jsonrpc/main/docs/hardening.md): This report records the evidence-driven security, correctness, interoperability, and operational audit of `go-jsonrpc`. It is a living audit artifact: an `Open` disposition is a release blocker at the stated severity, not an implied acceptance of the risk.
-- [Versioning and release guide](https://raw.githubusercontent.com/faustbrian/go-jsonrpc/main/docs/releasing.md): Releases are immutable semantic-version tags created from a clean, reviewed `main` commit. The GitHub tag workflow reruns tests, race detection, coverage, and vet before creating release notes.
-- [Roadmap](https://raw.githubusercontent.com/faustbrian/go-jsonrpc/main/ROADMAP.md): The roadmap is ordered by protocol confidence, not feature count. New adapters must reuse the same envelopes, validation, dispatch, and error semantics.
-- [Changelog](https://raw.githubusercontent.com/faustbrian/go-jsonrpc/main/CHANGELOG.md): All notable changes to this project are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
-
-## Complete documentation
-
-- [llms-full.txt](https://raw.githubusercontent.com/faustbrian/go-jsonrpc/main/llms-full.txt): All linked documentation in one file.
+- [Complete documentation bundle](llms-full.txt)
+- [go-jsonrpc](README.md)
+- [go-jsonrpc Documentation](docs/README.md)
+- [Quickstart](docs/quickstart.md)
+- [Production adoption guide](docs/adoption.md)
+- [Public API reference](docs/api.md)
+- [Architecture](docs/architecture.md)
+- [Examples](docs/examples.md)
+- [Scenario cookbook](docs/cookbook.md)
+- [FAQ](docs/faq.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Migration](docs/migration.md)
+- [Compatibility policy](docs/compatibility.md)
+- [Performance](docs/performance.md)
+- [Hardening report](docs/hardening.md)
+- [Security](docs/security.md)
+- [Versioning and release guide](docs/releasing.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security Policy](SECURITY.md)
+- [Roadmap](ROADMAP.md)
+- [Changelog](CHANGELOG.md)
+- [JSON-RPC 2.0 conformance matrix](docs/conformance.md)
+- [Middleware, authentication, and observability](docs/middleware.md)
+- [Repository Standards](docs/repository-standards.md)

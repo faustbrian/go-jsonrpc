@@ -160,8 +160,7 @@ func TestHTTPTransportRejectsNilContextWithoutNetworkIO(t *testing.T) {
 			return nil, errors.New("unexpected network call")
 		}),
 	}))
-	//lint:ignore SA1012 This regression test verifies defensive nil handling.
-	if _, err := transport.RoundTrip(nil, []byte(`{}`)); err == nil {
+	if _, err := transport.RoundTrip(nil, []byte(`{}`)); err == nil { //nolint:staticcheck // verifies defensive nil handling
 		t.Fatal("RoundTrip(nil context) unexpectedly succeeded")
 	}
 	if called {

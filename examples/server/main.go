@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	jsonrpc "github.com/faustbrian/go-jsonrpc"
 )
@@ -16,8 +17,16 @@ func main() {
 	}
 
 	handler := jsonrpc.NewHTTPHandler(jsonrpc.NewDispatcher(registry))
+	server := &http.Server{
+		Addr:              ":8080",
+		Handler:           http.StripPrefix("/rpc", handler),
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
 	log.Println("JSON-RPC listening on http://localhost:8080/rpc")
-	log.Fatal(http.ListenAndServe(":8080", http.StripPrefix("/rpc", handler)))
+	log.Fatal(server.ListenAndServe())
 }
 
 func greet(_ context.Context, raw json.RawMessage) (any, error) {

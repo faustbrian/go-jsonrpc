@@ -55,7 +55,7 @@ func (h *HTTPHandler) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 		http.Error(writer, "unsupported media type", http.StatusUnsupportedMediaType)
 		return
 	}
-	defer request.Body.Close()
+	defer func() { _ = request.Body.Close() }()
 	body, err := io.ReadAll(http.MaxBytesReader(writer, request.Body, h.maxRequestBytes))
 	if err != nil {
 		var maxBytesError *http.MaxBytesError

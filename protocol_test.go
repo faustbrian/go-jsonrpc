@@ -637,7 +637,7 @@ func TestRPCErrorModel(t *testing.T) {
 	if got := err.Error(); got != "jsonrpc error 42: application failure" {
 		t.Errorf("Error() = %q", got)
 	}
-	err.WithData(make(chan int))
+	_ = err.WithData(make(chan int))
 	if err.Data != nil {
 		t.Error("WithData(unencodable) retained stale public data")
 	}
