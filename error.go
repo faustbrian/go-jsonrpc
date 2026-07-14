@@ -1,0 +1,53 @@
+package jsonrpc
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+const (
+	CodeParseError     = -32700
+	CodeInvalidRequest = -32600
+	CodeMethodNotFound = -32601
+	CodeInvalidParams  = -32602
+	CodeInternalError  = -32603
+)
+
+// Error is a JSON-RPC error object. Cause is retained locally and is never
+// serialized, allowing callers to preserve diagnostic context safely.
+type Error struct {
+	Code    int             `json:"code"`
+	Message string          `json:"message"`
+	Data    json.RawMessage `json:"data,omitempty"`
+	cause   error
+}
+
+func NewError(code int, message string) *Error {
+	return &Error{Code: code, Message: message}
+}
+
+func (e *Error) Error() string {
+	return fmt.Sprintf("jsonrpc error %d: %s", e.Code, e.Message)
+}
+
+func (e *Error) Unwrap() error { return e.cause }
+
+func (e *Error) WithData(value any) *Error {
+	data, err := json.Marshal(value)
+	if err != nil {
+		return e.WithCause(err)
+	}
+	e.Data = data
+	return e
+}
+
+func (e *Error) WithCause(cause error) *Error {
+	e.cause = cause
+	return e
+}
+
+func ParseError() *Error     { return NewError(CodeParseError, "Parse error") }
+func InvalidRequest() *Error { return NewError(CodeInvalidRequest, "Invalid Request") }
+func MethodNotFound() *Error { return NewError(CodeMethodNotFound, "Method not found") }
+func InvalidParams() *Error  { return NewError(CodeInvalidParams, "Invalid params") }
+func InternalError() *Error  { return NewError(CodeInternalError, "Internal error") }
