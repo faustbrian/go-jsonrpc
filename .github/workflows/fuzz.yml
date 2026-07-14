@@ -1,0 +1,33 @@
+name: Fuzz
+
+on:
+  pull_request:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - FuzzDispatcher
+          - FuzzRequestUnmarshal
+          - FuzzResponseUnmarshal
+          - FuzzErrorUnmarshal
+          - FuzzIDRoundTrip
+          - FuzzClientCorrelation
+          - FuzzClientBatchCorrelation
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Run fuzz target
+        run: go test -run='^$' -fuzz='^${{ matrix.target }}$' -fuzztime=30s .
