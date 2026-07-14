@@ -2,7 +2,7 @@
 set -euo pipefail
 
 profile="${TMPDIR:-/tmp}/go-jsonrpc-coverage.out"
-go test -covermode=atomic -coverprofile="$profile" ./...
+go test -covermode=atomic -coverprofile="$profile" .
 
 coverage="$({ go tool cover -func="$profile"; } | awk '/^total:/ {print $3}')"
 if [[ "$coverage" != "100.0%" ]]; then
