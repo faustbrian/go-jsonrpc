@@ -24,6 +24,7 @@ type Error struct {
 	cause      error
 	codeSet    bool
 	messageSet bool
+	decoded    bool
 }
 
 func NewError(code int, message string) *Error {
@@ -41,6 +42,7 @@ func (e *Error) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	e.Code, e.Message, e.Data, e.cause = 0, "", nil, nil
+	e.decoded = true
 	e.codeSet, e.messageSet = wire.Code != nil, wire.Message != nil
 	if e.codeSet {
 		if bytes.Equal(bytes.TrimSpace(wire.Code), []byte("null")) {
@@ -62,7 +64,10 @@ func (e *Error) UnmarshalJSON(data []byte) error {
 }
 
 func (e *Error) valid() bool {
-	return (e.codeSet || e.Code != 0) && (e.messageSet || e.Message != "")
+	if e.decoded {
+		return e.codeSet && e.messageSet
+	}
+	return true
 }
 
 func (e *Error) Error() string {

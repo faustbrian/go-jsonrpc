@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"reflect"
 	"strings"
 	"sync/atomic"
@@ -328,17 +327,27 @@ func TestDispatcherContainsInvalidHandlerErrors(t *testing.T) {
 		return nil, &Error{}
 	})
 	dispatcher := NewDispatcher(registry)
-	for id, method := range []string{"invalid-data", "invalid-shape"} {
-		payload := []byte(fmt.Sprintf(`{"jsonrpc":"2.0","method":%q,"id":%d}`, method, id+1))
-		response, ok := dispatcher.Dispatch(context.Background(), payload)
-		if !ok {
-			t.Fatalf("Dispatch(%s) unexpectedly omitted response", method)
-		}
-		assertJSONEqual(t, response, []byte(fmt.Sprintf(
-			`{"jsonrpc":"2.0","error":{"code":-32603,"message":"Internal error"},"id":%d}`,
-			id+1,
-		)))
+	response, ok := dispatcher.Dispatch(
+		context.Background(),
+		[]byte(`{"jsonrpc":"2.0","method":"invalid-data","id":1}`),
+	)
+	if !ok {
+		t.Fatal("Dispatch(invalid-data) unexpectedly omitted response")
 	}
+	assertJSONEqual(t, response, []byte(
+		`{"jsonrpc":"2.0","error":{"code":-32603,"message":"Internal error"},"id":1}`,
+	))
+
+	response, ok = dispatcher.Dispatch(
+		context.Background(),
+		[]byte(`{"jsonrpc":"2.0","method":"invalid-shape","id":2}`),
+	)
+	if !ok {
+		t.Fatal("Dispatch(zero application error) unexpectedly omitted response")
+	}
+	assertJSONEqual(t, response, []byte(
+		`{"jsonrpc":"2.0","error":{"code":0,"message":""},"id":2}`,
+	))
 }
 
 func TestDispatcherLifecycleHooksObserveAllOutcomes(t *testing.T) {

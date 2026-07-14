@@ -165,8 +165,8 @@ func TestProtocolDefensivePaths(t *testing.T) {
 		errorSet: true,
 		idSet:    true,
 	}
-	if err := invalidError.Validate(); err == nil {
-		t.Error("Validate(error without message) unexpectedly succeeded")
+	if err := invalidError.Validate(); err != nil {
+		t.Errorf("Validate(programmatic error) error = %v", err)
 	}
 
 	rpcErr := NewError(1, "bad").WithData(make(chan int))
