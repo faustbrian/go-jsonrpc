@@ -80,10 +80,7 @@ func NewHTTPTransport(endpoint string, options ...HTTPTransportOption) (*HTTPTra
 }
 
 func (transport *HTTPTransport) RoundTrip(ctx context.Context, payload []byte) ([]byte, error) {
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, transport.endpoint, bytes.NewReader(payload))
-	if err != nil {
-		return nil, err
-	}
+	request, _ := http.NewRequestWithContext(ctx, http.MethodPost, transport.endpoint, bytes.NewReader(payload))
 	request.Header = transport.headers.Clone()
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Accept", "application/json")

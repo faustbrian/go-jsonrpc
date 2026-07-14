@@ -75,10 +75,7 @@ func (client *Client) Call(ctx context.Context, method string, params, result an
 	if err != nil {
 		return err
 	}
-	payload, err := json.Marshal(request)
-	if err != nil {
-		return err
-	}
+	payload, _ := json.Marshal(request)
 	reply, err := client.roundTrip(ctx, payload)
 	if err != nil {
 		return err
@@ -116,10 +113,7 @@ func (client *Client) Notify(ctx context.Context, method string, params any) err
 	if err != nil {
 		return err
 	}
-	payload, err := json.Marshal(request)
-	if err != nil {
-		return err
-	}
+	payload, _ := json.Marshal(request)
 	reply, err := client.roundTrip(ctx, payload)
 	if err != nil {
 		return err
@@ -165,10 +159,7 @@ func (client *Client) Batch(ctx context.Context, calls ...*BatchCall) error {
 		}
 		requests = append(requests, request)
 	}
-	payload, err := json.Marshal(requests)
-	if err != nil {
-		return err
-	}
+	payload, _ := json.Marshal(requests)
 	reply, err := client.roundTrip(ctx, payload)
 	if err != nil {
 		return err

@@ -250,6 +250,9 @@ func TestDecodeParams(t *testing.T) {
 	if _, rpcErr = DecodeParams[input](nil); rpcErr == nil || rpcErr.Code != CodeInvalidParams {
 		t.Errorf("DecodeParams(nil) = %v", rpcErr)
 	}
+	if _, rpcErr = DecodeParams[input](json.RawMessage(`{"name":"Ada"} {}`)); rpcErr == nil || rpcErr.Code != CodeInvalidParams {
+		t.Errorf("DecodeParams(trailing JSON) = %v", rpcErr)
+	}
 }
 
 func TestRequestIsAvailableFromHandlerContext(t *testing.T) {

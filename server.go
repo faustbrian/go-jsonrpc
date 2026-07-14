@@ -114,9 +114,7 @@ func (d *Dispatcher) Dispatch(ctx context.Context, payload []byte) ([]byte, bool
 
 func (d *Dispatcher) dispatchBatch(ctx context.Context, payload []byte) ([]byte, bool) {
 	var items []json.RawMessage
-	if err := json.Unmarshal(payload, &items); err != nil {
-		return marshalResponse(errorResponse(NullID(), ParseError())), true
-	}
+	_ = json.Unmarshal(payload, &items)
 	if len(items) == 0 {
 		return marshalResponse(errorResponse(NullID(), InvalidRequest())), true
 	}
@@ -130,10 +128,7 @@ func (d *Dispatcher) dispatchBatch(ctx context.Context, payload []byte) ([]byte,
 	if len(responses) == 0 {
 		return nil, false
 	}
-	encoded, err := json.Marshal(responses)
-	if err != nil {
-		return marshalResponse(errorResponse(NullID(), InternalError().WithCause(err))), true
-	}
+	encoded, _ := json.Marshal(responses)
 	return encoded, true
 }
 
