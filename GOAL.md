@@ -8,6 +8,8 @@ use as a public dependency.
 
 The package should support both server and client use cases and must be
 designed for production APIs, not only toy examples.
+It is expected to become a full-spec open source package with no intentional
+spec divergences or compliance gaps.
 
 ## Why This Exists
 
@@ -30,6 +32,7 @@ observable RPC helpers.
 - framework-agnostic
 - compatible with plain `net/http`
 - usable for both server and client implementations
+- full-spec compliant
 - explicit about protocol behavior
 - suitable for internal service-to-service and public API use
 
@@ -76,7 +79,7 @@ It should not force a specific router, validator, logger, or transport stack.
 
 ## Core Requirements
 
-### 1. Protocol Correctness
+### 1. Full Protocol Correctness
 
 The package must implement JSON-RPC 2.0 cleanly and explicitly.
 
@@ -87,6 +90,7 @@ This includes:
 - correct handling of parse errors, invalid requests, method-not-found,
   invalid params, and internal errors
 - correct ID echoing rules
+- no intentional protocol deviations for local convenience
 
 ### 2. Clear Separation Between Transport And Protocol
 
@@ -129,6 +133,14 @@ The first version must be efficient enough for high-traffic service use:
 - avoid per-request reflection churn where possible
 - keep batch handling efficient
 - minimize allocation-heavy abstractions on hot paths
+
+### 6. No Spec Divergences
+
+The package must not intentionally diverge from JSON-RPC 2.0 to fit one
+application's transport habits or error preferences.
+
+Any optional convenience behavior must be clearly identified as optional and
+must not weaken protocol compliance.
 
 ## First-Version Deliverables
 
@@ -187,6 +199,7 @@ Required test coverage includes:
 - regression tests for every protocol bug found
 - fuzzing for parser and dispatcher surfaces
 - benchmarks for single-call and batch workloads
+- clear proof that every required protocol rule is covered
 
 ## Versioning And Compatibility
 
@@ -237,7 +250,7 @@ The package must be publishable as a clean public dependency:
 
 This goal is achieved when:
 
-- the package correctly implements JSON-RPC 2.0 core behavior
+- the package can honestly claim full JSON-RPC 2.0 compliance
 - both server and client usage are production-credible
 - observability and middleware hooks are clean enough for real services
 - protocol conformance is documented and tested
@@ -249,4 +262,5 @@ This goal is achieved when:
 - Do not let HTTP assumptions dominate the core package.
 - Do not publish a `v1` before batch, notification, and error semantics are
   proven.
+- Do not ship local convenience deviations as if they were protocol-compliant.
 - Do not add queue, workflow, or service discovery concerns to this package.
