@@ -31,4 +31,3 @@ jobs:
         run: scripts/check-coverage.sh
       - name: Validate documentation and examples
         run: scripts/check-docs.sh
-

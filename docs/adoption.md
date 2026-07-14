@@ -73,4 +73,3 @@ transport failure and ensure methods are appropriately idempotent.
 - Public error data contains no internal or personal information.
 - Dashboards and alerts use bounded labels.
 - Rollout and Rollback owners know the switch mechanism.
-

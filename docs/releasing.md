@@ -52,4 +52,3 @@ If a broken version was published, document it and release the next patch.
 This repository publishes a Go library, so no binary artifact is required. The
 tag identifies the source consumed by the Go module proxy. Workflows pin tool
 versions where they install tools and use the module's declared Go version.
-

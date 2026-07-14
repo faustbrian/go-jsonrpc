@@ -30,4 +30,3 @@ compliance defect found during release-candidate use blocks v1.
 - Queue orchestration or background job frameworks.
 - Automatic retries that assume method idempotency.
 - SOAP, XML-RPC, GraphQL, or JSON:API support in this module.
-

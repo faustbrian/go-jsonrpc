@@ -57,4 +57,3 @@ Map key order, allocation counts, exact internal error causes, benchmark timing,
 and sequential batch execution are implementation details unless explicitly
 promoted to guarantees. Batch response order must never be relied upon because
 the JSON-RPC specification allows any order.
-

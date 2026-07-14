@@ -48,4 +48,3 @@ version 2.1, available at the [Contributor Covenant text][version].
 
 [homepage]: https://www.contributor-covenant.org
 [version]: https://www.contributor-covenant.org/version/2/1/code_of_conduct.html
-

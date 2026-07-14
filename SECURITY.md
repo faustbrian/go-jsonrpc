@@ -45,4 +45,3 @@ Particularly sensitive areas include body-size enforcement, panic containment,
 error-data disclosure, batch amplification, custom transports, header handling,
 and context cancellation. Authentication, authorization, TLS configuration,
 rate limiting, and application validation remain the adopter's responsibility.
-

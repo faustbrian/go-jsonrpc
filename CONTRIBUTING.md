@@ -73,4 +73,3 @@ and must not weaken validation for speed.
 
 Do not open a public issue for a vulnerability. Follow
 [`SECURITY.md`](SECURITY.md) so maintainers can coordinate a fix and disclosure.
-

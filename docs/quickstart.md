@@ -105,4 +105,3 @@ type Transport interface {
 
 For notifications, return `nil, nil`. The transport must preserve the complete
 JSON-RPC payload, including batch arrays.
-
