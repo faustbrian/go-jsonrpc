@@ -16,6 +16,7 @@ func TestRepositoryAutomationContract(t *testing.T) {
 			"staticcheck ./...",
 			"go vet ./...",
 			"gofmt",
+			"scripts/check-docs.sh",
 		},
 		".github/workflows/fuzz.yml": {
 			"FuzzDispatcher",
@@ -30,6 +31,7 @@ func TestRepositoryAutomationContract(t *testing.T) {
 		},
 		".github/dependabot.yml":    {"gomod", "github-actions"},
 		"scripts/check-coverage.sh": {"100.0%"},
+		"scripts/check-docs.sh":     {"go test ./...", "examples/e2e", "Markdown link"},
 	}
 
 	for path, fragments := range required {
