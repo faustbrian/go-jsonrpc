@@ -88,7 +88,10 @@ static-analysis, vulnerability, and benchmark automation.
 - [Changelog](CHANGELOG.md)
 
 Runnable programs live under [`examples`](examples).
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for development instructions,
+[`SECURITY.md`](SECURITY.md) for private vulnerability reporting, and
+[`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) for community expectations.
 
 ## License
 
-MIT.
+MIT. See [`LICENSE`](LICENSE).
