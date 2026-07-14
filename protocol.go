@@ -118,6 +118,7 @@ func (r *Request) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &wire); err != nil {
 		return err
 	}
+	r.Method = ""
 	r.JSONRPC, r.Params = wire.JSONRPC, wire.Params
 	r.methodSet = wire.Method != nil
 	if r.methodSet {

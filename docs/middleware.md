@@ -16,7 +16,7 @@ hooks := jsonrpc.Hooks{
         return startProtocolSpan(ctx, request)
     },
     OnResponse: func(ctx context.Context, request *jsonrpc.Request, response *jsonrpc.Response) {
-        // response is nil for a notification.
+        // Notifications provide an internal outcome that is never sent.
         finishProtocolSpan(ctx, request, response)
     },
 }

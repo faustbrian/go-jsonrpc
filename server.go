@@ -26,7 +26,8 @@ type ErrorMapper func(error) *Error
 
 // Hooks observe the complete dispatcher lifecycle, including protocol errors
 // that occur before a Handler or Middleware can run. A nil Request represents
-// an unparseable or invalid request. A nil Response represents a notification.
+// an unparseable or invalid request. Notifications provide an internal outcome
+// to OnResponse even though that response is never placed on the wire.
 type Hooks struct {
 	OnRequest  func(context.Context, *Request) context.Context
 	OnResponse func(context.Context, *Request, *Response)
@@ -171,8 +172,8 @@ func (d *Dispatcher) dispatchItem(ctx context.Context, payload []byte) (response
 	}
 	ctx = d.begin(ctx, &request)
 	if request.IsNotification() {
-		d.execute(ctx, request)
-		d.finish(ctx, &request, nil)
+		outcome := d.execute(ctx, request)
+		d.finish(ctx, &request, &outcome)
 		return Response{}, false
 	}
 	response = d.execute(ctx, request)
@@ -244,7 +245,15 @@ func (d *Dispatcher) finish(ctx context.Context, request *Request, response *Res
 		return
 	}
 	defer func() { _ = recover() }()
-	d.hooks.OnResponse(ctx, request, response)
+	observed := *response
+	observed.Result = append(json.RawMessage(nil), response.Result...)
+	observed.ID.raw = append(json.RawMessage(nil), response.ID.raw...)
+	if response.Error != nil {
+		rpcErr := *response.Error
+		rpcErr.Data = append(json.RawMessage(nil), response.Error.Data...)
+		observed.Error = &rpcErr
+	}
+	d.hooks.OnResponse(ctx, request, &observed)
 }
 
 func errorResponse(id ID, rpcErr *Error) Response {

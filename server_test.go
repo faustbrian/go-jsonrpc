@@ -364,9 +364,10 @@ func TestDispatcherLifecycleHooksObserveAllOutcomes(t *testing.T) {
 			return context.WithValue(ctx, hookKey{}, "hooked")
 		},
 		OnResponse: func(_ context.Context, request *Request, response *Response) {
-			observed := event{notification: response == nil}
+			observed := event{}
 			if request != nil {
 				observed.method = request.Method
+				observed.notification = request.IsNotification()
 			}
 			if response != nil && response.Error != nil {
 				observed.code = response.Error.Code
@@ -383,6 +384,7 @@ func TestDispatcherLifecycleHooksObserveAllOutcomes(t *testing.T) {
 		`{"jsonrpc":"2.0","id":1}`,
 		`{"jsonrpc":"2.0","method":"missing","id":2}`,
 		`{"jsonrpc":"2.0","method":"ok"}`,
+		`{"jsonrpc":"2.0","method":"missing-notification"}`,
 		`{"jsonrpc":"2.0","method":"panic","id":3}`,
 	}
 	for _, input := range inputs {
@@ -400,11 +402,14 @@ func TestDispatcherLifecycleHooksObserveAllOutcomes(t *testing.T) {
 	if events[2].code != CodeMethodNotFound || events[2].method != "missing" {
 		t.Errorf("missing event = %#v", events[2])
 	}
-	if !events[3].notification || events[3].method != "ok" {
+	if !events[3].notification || events[3].method != "ok" || events[3].code != 0 {
 		t.Errorf("notification event = %#v", events[3])
 	}
-	if events[4].code != CodeInternalError || !strings.Contains(events[4].cause, "goroutine") {
-		t.Errorf("panic event = %#v", events[4])
+	if events[4].code != CodeMethodNotFound || !events[4].notification {
+		t.Errorf("failed notification event = %#v", events[4])
+	}
+	if events[5].code != CodeInternalError || !strings.Contains(events[5].cause, "goroutine") {
+		t.Errorf("panic event = %#v", events[5])
 	}
 }
 
@@ -412,8 +417,11 @@ func TestDispatcherLifecycleHooksCannotBreakDispatch(t *testing.T) {
 	t.Parallel()
 
 	hooks := Hooks{
-		OnRequest:  func(context.Context, *Request) context.Context { panic("start") },
-		OnResponse: func(context.Context, *Request, *Response) { panic("finish") },
+		OnRequest: func(context.Context, *Request) context.Context { panic("start") },
+		OnResponse: func(_ context.Context, _ *Request, response *Response) {
+			response.Error.Data = json.RawMessage(`{`)
+			panic("finish")
+		},
 	}
 	response, ok := NewDispatcher(nil, WithHooks(hooks)).Dispatch(
 		context.Background(),

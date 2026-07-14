@@ -38,6 +38,7 @@ func (e *Error) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &wire); err != nil {
 		return err
 	}
+	e.Code, e.Message, e.Data, e.cause = 0, "", nil, nil
 	e.codeSet, e.messageSet = wire.Code != nil, wire.Message != nil
 	if e.codeSet {
 		if err := json.Unmarshal(wire.Code, &e.Code); err != nil {

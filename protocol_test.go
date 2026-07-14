@@ -134,6 +134,36 @@ func TestRequestDistinguishesNotificationFromNullID(t *testing.T) {
 	}
 }
 
+func TestRequestUnmarshalClearsReusedState(t *testing.T) {
+	t.Parallel()
+
+	var request Request
+	if err := json.Unmarshal([]byte(`{"jsonrpc":"2.0","method":"first","id":1}`), &request); err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal([]byte(`{"jsonrpc":"2.0","id":2}`), &request); err != nil {
+		t.Fatal(err)
+	}
+	if request.Method != "" || request.Validate() == nil {
+		t.Errorf("reused request retained stale method: %#v", request)
+	}
+}
+
+func TestErrorUnmarshalClearsReusedState(t *testing.T) {
+	t.Parallel()
+
+	var rpcErr Error
+	if err := json.Unmarshal([]byte(`{"code":1,"message":"first","data":{"safe":true}}`), &rpcErr); err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal([]byte(`{"message":"second"}`), &rpcErr); err != nil {
+		t.Fatal(err)
+	}
+	if rpcErr.Code != 0 || rpcErr.Data != nil || rpcErr.valid() {
+		t.Errorf("reused error retained stale state: %#v", rpcErr)
+	}
+}
+
 func TestResponseValidation(t *testing.T) {
 	t.Parallel()
 
