@@ -252,6 +252,24 @@ func TestDecodeParams(t *testing.T) {
 	}
 }
 
+func TestRequestIsAvailableFromHandlerContext(t *testing.T) {
+	t.Parallel()
+
+	registry := NewRegistry()
+	_ = registry.Register("inspect", func(ctx context.Context, _ json.RawMessage) (any, error) {
+		request, ok := RequestFromContext(ctx)
+		if !ok {
+			t.Fatal("RequestFromContext() did not find request")
+		}
+		return request.Method, nil
+	})
+	response, _ := NewDispatcher(registry).Dispatch(
+		context.Background(),
+		[]byte(`{"jsonrpc":"2.0","method":"inspect","id":1}`),
+	)
+	assertJSONEqual(t, response, []byte(`{"jsonrpc":"2.0","result":"inspect","id":1}`))
+}
+
 func assertJSONEqual(t *testing.T, got, want []byte) {
 	t.Helper()
 	if len(want) == 0 {

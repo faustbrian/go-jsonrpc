@@ -20,6 +20,13 @@ type Handler func(context.Context, json.RawMessage) (any, error)
 type Middleware func(Handler) Handler
 type ErrorMapper func(error) *Error
 
+type requestContextKey struct{}
+
+func RequestFromContext(ctx context.Context) (Request, bool) {
+	request, ok := ctx.Value(requestContextKey{}).(Request)
+	return request, ok
+}
+
 type Registry struct {
 	mu      sync.RWMutex
 	methods map[string]Handler
@@ -149,6 +156,7 @@ func (d *Dispatcher) dispatchItem(ctx context.Context, payload []byte) (response
 }
 
 func (d *Dispatcher) execute(ctx context.Context, request Request) (response Response) {
+	ctx = context.WithValue(ctx, requestContextKey{}, request)
 	response = Response{JSONRPC: Version, ID: request.ID, idSet: true}
 	defer func() {
 		if recovered := recover(); recovered != nil {
