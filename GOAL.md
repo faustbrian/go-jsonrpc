@@ -173,9 +173,25 @@ must not weaken protocol compliance.
 - README
 - quickstart
 - architecture overview
+- full public API reference
 - examples for client and server
+- end-to-end usage examples
+- scenario cookbook
+- adoption guide
+- FAQ
+- troubleshooting guide
 - middleware or interceptor guidance
 - compatibility policy
+- versioning and release guide
+- contribution guide
+
+The documentation must be good enough that a new user can:
+
+- understand the protocol guarantees
+- stand up a server quickly
+- integrate a client quickly
+- understand batch, notification, and error behavior without reading source
+- adopt the package in production with clear examples and caveats
 
 ## API Design Principles
 
@@ -207,6 +223,30 @@ Required test coverage includes:
 - avoid casual breaking changes to error or response semantics
 - document every breaking change
 - treat protocol behavior as compatibility-sensitive
+
+## Repository Automation And Quality Gates
+
+The repository must include GitHub Actions workflows for:
+
+- test execution
+- formatting checks
+- linting
+- static analysis
+- fuzzing or fuzz-target verification strategy
+- benchmark execution strategy
+- documentation validation where practical
+- dependency and security scanning
+- tagged release automation
+
+At minimum, pull requests must have automated checks that prove:
+
+- the code builds
+- tests pass
+- formatting is enforced
+- lint and static-analysis gates are green
+- documentation examples do not silently rot
+
+Release workflows must be explicit and reproducible.
 
 ## Open Source Standard
 
@@ -242,7 +282,11 @@ The package must be publishable as a clean public dependency:
 ### Phase 4: Open Source Readiness
 
 - finalize docs
+- finalize technical API documentation
+- finalize adoption documentation
+- finalize FAQ and troubleshooting content
 - add contribution guide
+- finish GitHub Actions and release automation
 - publish roadmap
 - release `v1`
 
@@ -254,6 +298,8 @@ This goal is achieved when:
 - both server and client usage are production-credible
 - observability and middleware hooks are clean enough for real services
 - protocol conformance is documented and tested
+- GitHub Actions quality gates and release automation are in place
+- user-facing docs are complete enough for direct adoption
 - the repo is suitable for open source publication and external use
 
 ## Hard Warnings
