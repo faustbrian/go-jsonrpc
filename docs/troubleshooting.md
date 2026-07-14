@@ -13,7 +13,7 @@ safe correlation ID; avoid logging confidential raw bodies.
 ## Invalid Request (-32600)
 
 The JSON value is valid but not a valid request object. Common causes are a
-missing or non-`"2.0"` `jsonrpc`, a non-string or empty method, scalar/null
+missing or non-`"2.0"` `jsonrpc`, a non-string method, scalar/null
 params, an invalid ID type, an empty batch, or a scalar batch member. Invalid
 requests respond with a null ID because the supplied ID cannot be trusted.
 
@@ -74,4 +74,3 @@ pagination or streaming design rather than oversized RPC envelopes.
 The package propagates context, but handler code and downstream clients must
 observe it. Ensure database, HTTP, and queue calls use the supplied handler
 context instead of `context.Background()`.
-

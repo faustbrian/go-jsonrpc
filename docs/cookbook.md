@@ -25,9 +25,7 @@ message first and install its defaults explicitly.
 ## Custom application errors
 
 ```go
-var notReady = jsonrpc.NewError(-32010, "Resource not ready")
-
-return nil, notReady.WithData(map[string]any{
+return nil, jsonrpc.NewError(-32010, "Resource not ready").WithData(map[string]any{
     "retryable": true,
 })
 ```
@@ -93,4 +91,3 @@ The HTTP transport attaches the supplied context to the request. The HTTP
 handler passes `request.Context()` into dispatch. Handlers and middleware must
 honor cancellation in their own I/O; the package cannot interrupt code that
 ignores context.
-

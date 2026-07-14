@@ -36,7 +36,8 @@ the standard errors. Their codes are also exported as `CodeParseError`,
 
 - `Handler` is `func(context.Context, json.RawMessage) (any, error)`.
 - `Registry` is created by `NewRegistry`; `Register` adds one unique method and
-  `Lookup` supports explicit inspection.
+  `Lookup` supports explicit inspection. An empty string is a valid method name
+  because the protocol requires only a string; the `rpc.` prefix is reserved.
 - `Dispatcher` is created with `NewDispatcher`. `Dispatch` processes a single
   request or batch and returns bytes plus a boolean indicating whether a reply
   exists.
@@ -44,6 +45,9 @@ the standard errors. Their codes are also exported as `CodeParseError`,
   listed order, with the first item outermost.
 - `ErrorMapper` converts ordinary application errors to safe RPC errors.
   `WithErrorMapper` replaces the default internal-error mapping.
+- `Hooks` observes the complete dispatcher lifecycle. `WithHooks` installs
+  callbacks that see parse errors, invalid requests, method lookup failures,
+  notifications, handler results, mapped errors, and recovered panics.
 - `RequestFromContext` retrieves the validated request during middleware or
   handler execution.
 - Registration errors are detectable with `ErrInvalidMethodName`,

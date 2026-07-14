@@ -47,6 +47,22 @@ func TestIDRoundTripAndEquality(t *testing.T) {
 	if StringID("1").Equal(NumberID(json.Number("1"))) {
 		t.Error("string and number IDs must not compare equal")
 	}
+	var escapedString, decimalNumber, exponentNumber ID
+	for input, target := range map[string]*ID{
+		`"\u0061"`: &escapedString,
+		`1.0`:      &decimalNumber,
+		`1e0`:      &exponentNumber,
+	} {
+		if err := json.Unmarshal([]byte(input), target); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if !StringID("a").Equal(escapedString) {
+		t.Error("equivalent escaped string IDs do not compare equal")
+	}
+	if !NumberID("1").Equal(decimalNumber) || !NumberID("1").Equal(exponentNumber) {
+		t.Error("equivalent numeric IDs do not compare equal")
+	}
 }
 
 func TestIDRejectsInvalidJSONTypes(t *testing.T) {
@@ -68,6 +84,7 @@ func TestRequestValidation(t *testing.T) {
 		`{"jsonrpc":"2.0","method":"subtract","params":{"minuend":42},"id":"a"}`,
 		`{"jsonrpc":"2.0","method":"update"}`,
 		`{"jsonrpc":"2.0","method":"update","id":null}`,
+		`{"jsonrpc":"2.0","method":"","id":1}`,
 	}
 	for _, input := range valid {
 		var request Request
@@ -82,7 +99,7 @@ func TestRequestValidation(t *testing.T) {
 
 	invalid := []string{
 		`{"jsonrpc":"1.0","method":"x","id":1}`,
-		`{"jsonrpc":"2.0","method":"","id":1}`,
+		`{"jsonrpc":"2.0","id":1}`,
 		`{"jsonrpc":"2.0","method":"x","params":"bad","id":1}`,
 		`{"jsonrpc":"2.0","method":"x","params":null,"id":1}`,
 	}
@@ -124,6 +141,7 @@ func TestResponseValidation(t *testing.T) {
 		`{"jsonrpc":"2.0","result":19,"id":1}`,
 		`{"jsonrpc":"2.0","result":null,"id":"a"}`,
 		`{"jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found"},"id":1}`,
+		`{"jsonrpc":"2.0","error":{"code":0,"message":""},"id":1}`,
 	}
 	for _, input := range valid {
 		var response Response
@@ -141,6 +159,8 @@ func TestResponseValidation(t *testing.T) {
 		`{"jsonrpc":"2.0","id":1}`,
 		`{"jsonrpc":"2.0","result":19,"error":{"code":-32603,"message":"Internal error"},"id":1}`,
 		`{"jsonrpc":"2.0","result":19}`,
+		`{"jsonrpc":"2.0","error":{"message":"missing code"},"id":1}`,
+		`{"jsonrpc":"2.0","error":{"code":1},"id":1}`,
 	}
 	for _, input := range invalid {
 		var response Response
@@ -150,6 +170,27 @@ func TestResponseValidation(t *testing.T) {
 		if err := response.Validate(); err == nil {
 			t.Errorf("Validate(invalid %s) unexpectedly succeeded", input)
 		}
+	}
+}
+
+func TestResponseUnmarshalClearsReusedState(t *testing.T) {
+	t.Parallel()
+
+	var response Response
+	if err := json.Unmarshal([]byte(`{"jsonrpc":"2.0","result":1,"id":1}`), &response); err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal([]byte(`{"jsonrpc":"2.0","error":{"code":1,"message":"bad"},"id":2}`), &response); err != nil {
+		t.Fatal(err)
+	}
+	if response.Result != nil || response.Error == nil || !response.ID.Equal(NumberID("2")) {
+		t.Errorf("reused error response retained stale state: %#v", response)
+	}
+	if err := json.Unmarshal([]byte(`{"jsonrpc":"2.0","result":3,"id":3}`), &response); err != nil {
+		t.Fatal(err)
+	}
+	if response.Error != nil || !response.ID.Equal(NumberID("3")) {
+		t.Errorf("reused result response retained stale state: %#v", response)
 	}
 }
 
@@ -173,6 +214,10 @@ func TestRPCErrorModel(t *testing.T) {
 	}
 	if got := err.Error(); got != "jsonrpc error 42: application failure" {
 		t.Errorf("Error() = %q", got)
+	}
+	err.WithData(make(chan int))
+	if err.Data != nil {
+		t.Error("WithData(unencodable) retained stale public data")
 	}
 }
 

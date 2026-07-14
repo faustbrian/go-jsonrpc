@@ -79,6 +79,7 @@ func TestHTTPTransportValidation(t *testing.T) {
 		{name: "status", status: http.StatusBadGateway, contentType: "text/plain", body: "upstream failed", want: ErrHTTPStatus},
 		{name: "media type", status: http.StatusOK, contentType: "text/plain", body: `{}`, want: ErrHTTPContentType},
 		{name: "response too large", status: http.StatusOK, contentType: "application/json", body: "12345", limit: 4, want: ErrResponseTooLarge},
+		{name: "error response too large", status: http.StatusBadGateway, contentType: "text/plain", body: "12345", limit: 4, want: ErrResponseTooLarge},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

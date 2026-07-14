@@ -32,7 +32,7 @@ independently, while an empty batch produces a single invalid-request object.
 
 ## Dispatch
 
-`Registry` is concurrency-safe and rejects duplicates, empty names, and the
+`Registry` is concurrency-safe and rejects duplicates and the
 specification-reserved `rpc.` prefix. A dispatcher looks up a method only after
 the request envelope validates. It echoes an ID only for a valid request;
 invalid requests use `null`.
@@ -53,6 +53,9 @@ one auditable place to map application errors without exposing internal text.
 Middleware wraps handlers in registration-independent chains. The current
 `Request` is placed in context before middleware and execution, so logging,
 tracing, metrics, correlation, and authorization can inspect the method and ID.
+Dispatcher `Hooks` surround the wider protocol lifecycle, including failures
+that occur before a handler or middleware exists. Hook panics are contained so
+observability cannot corrupt a protocol response.
 
 ## Client validation
 
@@ -67,4 +70,3 @@ Envelopes retain raw params and results until an application type is actually
 needed. Handlers are stored as compiled functions rather than reflected method
 descriptors. Batch storage is proportional to the number of members. Benchmarks
 track single and mixed-batch dispatch allocations in CI artifacts.
-

@@ -28,6 +28,18 @@ func TestClientCallAndTypedCall(t *testing.T) {
 	}
 }
 
+func TestClientMatchesEquivalentNumericID(t *testing.T) {
+	t.Parallel()
+
+	client := NewClient(TransportFunc(func(context.Context, []byte) ([]byte, error) {
+		return []byte(`{"jsonrpc":"2.0","result":42,"id":1.0}`), nil
+	}))
+	result, err := Call[int](context.Background(), client, "answer", nil)
+	if err != nil || result != 42 {
+		t.Errorf("Call() = (%d, %v), want 42, nil", result, err)
+	}
+}
+
 func TestClientCallErrors(t *testing.T) {
 	t.Parallel()
 
@@ -174,14 +186,17 @@ func TestRequestBuilders(t *testing.T) {
 		params any
 		id     ID
 	}{
-		{method: "", id: StringID("x")},
 		{method: "rpc.reserved", id: StringID("x")},
 		{method: "method", params: "scalar", id: StringID("x")},
 		{method: "method", id: ID{}},
+		{method: "method", id: NumberID("invalid")},
 	} {
 		if _, err := NewRequest(input.method, input.params, input.id); err == nil {
 			t.Errorf("NewRequest(%q, %#v, %#v) unexpectedly succeeded", input.method, input.params, input.id)
 		}
+	}
+	if _, err := NewRequest("", nil, StringID("empty")); err != nil {
+		t.Errorf("NewRequest(empty method) error = %v", err)
 	}
 }
 

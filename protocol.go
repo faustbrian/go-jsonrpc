@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"math/big"
 )
 
 const Version = "2.0"
@@ -19,17 +20,18 @@ const (
 
 // ID preserves the exact JSON representation of a string, number, or null ID.
 type ID struct {
-	kind IDKind
-	raw  json.RawMessage
+	kind      IDKind
+	raw       json.RawMessage
+	canonical string
 }
 
 func StringID(value string) ID {
 	raw, _ := json.Marshal(value)
-	return ID{kind: IDString, raw: raw}
+	return ID{kind: IDString, raw: raw, canonical: value}
 }
 
 func NumberID(value json.Number) ID {
-	return ID{kind: IDNumber, raw: json.RawMessage(value.String())}
+	return ID{kind: IDNumber, raw: json.RawMessage(value.String()), canonical: canonicalNumber(value.String())}
 }
 
 func NullID() ID { return ID{kind: IDNull, raw: json.RawMessage("null")} }
@@ -37,7 +39,24 @@ func NullID() ID { return ID{kind: IDNull, raw: json.RawMessage("null")} }
 func (id ID) Kind() IDKind { return id.kind }
 
 func (id ID) Equal(other ID) bool {
-	return id.kind == other.kind && bytes.Equal(id.raw, other.raw)
+	return id.kind == other.kind && id.canonical == other.canonical
+}
+
+func (id ID) valid() bool {
+	trimmed := bytes.TrimSpace(id.raw)
+	if !json.Valid(trimmed) {
+		return false
+	}
+	switch id.kind {
+	case IDString:
+		return len(trimmed) > 0 && trimmed[0] == '"'
+	case IDNumber:
+		return len(trimmed) > 0 && (trimmed[0] == '-' || (trimmed[0] >= '0' && trimmed[0] <= '9'))
+	case IDNull:
+		return bytes.Equal(trimmed, []byte("null"))
+	default:
+		return false
+	}
 }
 
 func (id ID) MarshalJSON() ([]byte, error) {
@@ -54,13 +73,16 @@ func (id *ID) UnmarshalJSON(data []byte) error {
 	if err := decoder.Decode(&value); err != nil {
 		return err
 	}
-	switch value.(type) {
+	switch typed := value.(type) {
 	case string:
 		id.kind = IDString
+		id.canonical = typed
 	case json.Number:
 		id.kind = IDNumber
+		id.canonical = canonicalNumber(typed.String())
 	case nil:
 		id.kind = IDNull
+		id.canonical = ""
 	default:
 		return errors.New("jsonrpc: id must be a string, number, or null")
 	}
@@ -68,18 +90,27 @@ func (id *ID) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+func canonicalNumber(value string) string {
+	number := new(big.Rat)
+	if _, ok := number.SetString(value); ok {
+		return number.RatString()
+	}
+	return value
+}
+
 type Request struct {
-	JSONRPC string          `json:"jsonrpc"`
-	Method  string          `json:"method"`
-	Params  json.RawMessage `json:"params,omitempty"`
-	ID      ID              `json:"-"`
-	idSet   bool
+	JSONRPC   string          `json:"jsonrpc"`
+	Method    string          `json:"method"`
+	Params    json.RawMessage `json:"params,omitempty"`
+	ID        ID              `json:"-"`
+	idSet     bool
+	methodSet bool
 }
 
 func (r *Request) UnmarshalJSON(data []byte) error {
 	type wireRequest struct {
 		JSONRPC string          `json:"jsonrpc"`
-		Method  string          `json:"method"`
+		Method  json.RawMessage `json:"method"`
 		Params  json.RawMessage `json:"params"`
 		ID      json.RawMessage `json:"id"`
 	}
@@ -87,7 +118,13 @@ func (r *Request) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &wire); err != nil {
 		return err
 	}
-	r.JSONRPC, r.Method, r.Params = wire.JSONRPC, wire.Method, wire.Params
+	r.JSONRPC, r.Params = wire.JSONRPC, wire.Params
+	r.methodSet = wire.Method != nil
+	if r.methodSet {
+		if err := json.Unmarshal(wire.Method, &r.Method); err != nil {
+			return err
+		}
+	}
 	r.idSet = wire.ID != nil
 	if r.idSet {
 		return json.Unmarshal(wire.ID, &r.ID)
@@ -110,7 +147,7 @@ func (r Request) MarshalJSON() ([]byte, error) {
 func (r Request) IsNotification() bool { return !r.idSet && r.ID.Kind() == IDMissing }
 
 func (r Request) Validate() *Error {
-	if r.JSONRPC != Version || r.Method == "" {
+	if r.JSONRPC != Version || (!r.methodSet && r.Method == "") {
 		return InvalidRequest()
 	}
 	if r.Params != nil {
@@ -143,6 +180,7 @@ func (r *Response) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &wire); err != nil {
 		return err
 	}
+	r.Result, r.Error, r.ID = nil, nil, ID{}
 	r.JSONRPC, r.Result = wire.JSONRPC, wire.Result
 	r.resultSet, r.errorSet, r.idSet = wire.Result != nil, wire.Error != nil, wire.ID != nil
 	if r.errorSet {
@@ -182,7 +220,7 @@ func (r Response) Validate() error {
 	if r.resultSet == r.errorSet {
 		return errors.New("jsonrpc: response must contain exactly one of result or error")
 	}
-	if r.errorSet && (r.Error == nil || r.Error.Message == "") {
+	if r.errorSet && (r.Error == nil || !r.Error.valid()) {
 		return errors.New("jsonrpc: invalid error object")
 	}
 	return nil

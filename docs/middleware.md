@@ -5,6 +5,28 @@ It is appropriate for RPC-aware authentication, authorization, logging,
 tracing, metrics, deadlines, and correlation. Ordinary `net/http` middleware
 remains the right place for TLS identity, HTTP headers, CORS, or IP controls.
 
+Use `Hooks` when telemetry must include parse errors, invalid requests,
+method-not-found responses, notifications, and panic recovery in addition to
+handler execution:
+
+```go
+hooks := jsonrpc.Hooks{
+    OnRequest: func(ctx context.Context, request *jsonrpc.Request) context.Context {
+        // request is nil when no valid request envelope could be recovered.
+        return startProtocolSpan(ctx, request)
+    },
+    OnResponse: func(ctx context.Context, request *jsonrpc.Request, response *jsonrpc.Response) {
+        // response is nil for a notification.
+        finishProtocolSpan(ctx, request, response)
+    },
+}
+dispatcher := jsonrpc.NewDispatcher(registry, jsonrpc.WithHooks(hooks))
+```
+
+Hooks are protected from panics. A context returned by `OnRequest` flows into
+middleware and the handler. Recovered handler panics attach a local cause and
+stack to the internal error, visible to `OnResponse` but never serialized.
+
 ## Ordering
 
 Middleware is listed outermost first:

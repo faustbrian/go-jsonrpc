@@ -96,6 +96,9 @@ func (transport *HTTPTransport) RoundTrip(ctx context.Context, payload []byte) (
 	if err != nil {
 		return nil, err
 	}
+	if int64(len(body)) > transport.maxResponseBytes {
+		return nil, ErrResponseTooLarge
+	}
 	if response.StatusCode != http.StatusOK {
 		return nil, &HTTPStatusError{
 			StatusCode: response.StatusCode,
@@ -104,9 +107,6 @@ func (transport *HTTPTransport) RoundTrip(ctx context.Context, payload []byte) (
 	}
 	if !IsJSONContentType(response.Header.Get("Content-Type")) {
 		return nil, ErrHTTPContentType
-	}
-	if int64(len(body)) > transport.maxResponseBytes {
-		return nil, ErrResponseTooLarge
 	}
 	return body, nil
 }

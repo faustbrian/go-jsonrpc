@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 	"sync/atomic"
@@ -24,10 +25,11 @@ func TestRegistryRegistration(t *testing.T) {
 	if err := registry.Register("ping", handler); !errors.Is(err, ErrMethodAlreadyRegistered) {
 		t.Errorf("duplicate Register() error = %v", err)
 	}
-	for _, name := range []string{"", "rpc.internal"} {
-		if err := registry.Register(name, handler); !errors.Is(err, ErrInvalidMethodName) {
-			t.Errorf("Register(%q) error = %v", name, err)
-		}
+	if err := registry.Register("", handler); err != nil {
+		t.Errorf("Register(empty method) error = %v", err)
+	}
+	if err := registry.Register("rpc.internal", handler); !errors.Is(err, ErrInvalidMethodName) {
+		t.Errorf("Register(reserved method) error = %v", err)
 	}
 	if err := registry.Register("nil", nil); !errors.Is(err, ErrNilHandler) {
 		t.Errorf("Register(nil) error = %v", err)
@@ -253,6 +255,43 @@ func TestDecodeParams(t *testing.T) {
 	if _, rpcErr = DecodeParams[input](json.RawMessage(`{"name":"Ada"} {}`)); rpcErr == nil || rpcErr.Code != CodeInvalidParams {
 		t.Errorf("DecodeParams(trailing JSON) = %v", rpcErr)
 	}
+	if _, rpcErr = DecodeParams[input](json.RawMessage(`{"NAME":"Ada"}`)); rpcErr == nil || rpcErr.Code != CodeInvalidParams {
+		t.Errorf("DecodeParams(case-mismatched name) = %v", rpcErr)
+	}
+	if values, rpcErr := DecodeParams[map[string]string](json.RawMessage(`{"arbitrary":"value"}`)); rpcErr != nil || values["arbitrary"] != "value" {
+		t.Errorf("DecodeParams(map) = (%v, %v)", values, rpcErr)
+	}
+	if values, rpcErr := DecodeParams[[]int](json.RawMessage(`[1,2]`)); rpcErr != nil || !reflect.DeepEqual(values, []int{1, 2}) {
+		t.Errorf("DecodeParams(slice) = (%v, %v)", values, rpcErr)
+	}
+}
+
+func TestDecodeParamsEmbeddedAndTaggedFields(t *testing.T) {
+	t.Parallel()
+
+	type Embedded struct {
+		Name string `json:"name"`
+	}
+	type input struct {
+		*Embedded
+		Count   int `json:"count,omitempty"`
+		Public  string
+		Ignore  string `json:"-"`
+		private string
+	}
+	decoded, rpcErr := DecodeParams[input](json.RawMessage(`{"name":"Ada","count":1,"Public":"ok"}`))
+	if rpcErr != nil || decoded.Embedded == nil || decoded.Name != "Ada" || decoded.Count != 1 || decoded.Public != "ok" || decoded.private != "" {
+		t.Fatalf("DecodeParams(embedded) = (%#v, %v)", decoded, rpcErr)
+	}
+	if _, rpcErr := DecodeParams[input](json.RawMessage(`{"Ignore":"bad"}`)); rpcErr == nil {
+		t.Error("DecodeParams(ignored field) unexpectedly succeeded")
+	}
+	if _, rpcErr := DecodeParams[input](json.RawMessage(`{`)); rpcErr == nil {
+		t.Error("DecodeParams(malformed object) unexpectedly succeeded")
+	}
+	if _, rpcErr := DecodeParams[*input](json.RawMessage(`{"Public":"pointer"}`)); rpcErr != nil {
+		t.Errorf("DecodeParams(pointer) error = %v", rpcErr)
+	}
 }
 
 func TestRequestIsAvailableFromHandlerContext(t *testing.T) {
@@ -271,6 +310,119 @@ func TestRequestIsAvailableFromHandlerContext(t *testing.T) {
 		[]byte(`{"jsonrpc":"2.0","method":"inspect","id":1}`),
 	)
 	assertJSONEqual(t, response, []byte(`{"jsonrpc":"2.0","result":"inspect","id":1}`))
+}
+
+func TestDispatcherContainsInvalidHandlerErrors(t *testing.T) {
+	t.Parallel()
+
+	registry := NewRegistry()
+	_ = registry.Register("invalid-data", func(context.Context, json.RawMessage) (any, error) {
+		rpcErr := NewError(42, "bad data")
+		rpcErr.Data = json.RawMessage(`{`)
+		return nil, rpcErr
+	})
+	_ = registry.Register("invalid-shape", func(context.Context, json.RawMessage) (any, error) {
+		return nil, &Error{}
+	})
+	dispatcher := NewDispatcher(registry)
+	for id, method := range []string{"invalid-data", "invalid-shape"} {
+		payload := []byte(fmt.Sprintf(`{"jsonrpc":"2.0","method":%q,"id":%d}`, method, id+1))
+		response, ok := dispatcher.Dispatch(context.Background(), payload)
+		if !ok {
+			t.Fatalf("Dispatch(%s) unexpectedly omitted response", method)
+		}
+		assertJSONEqual(t, response, []byte(fmt.Sprintf(
+			`{"jsonrpc":"2.0","error":{"code":-32603,"message":"Internal error"},"id":%d}`,
+			id+1,
+		)))
+	}
+}
+
+func TestDispatcherLifecycleHooksObserveAllOutcomes(t *testing.T) {
+	t.Parallel()
+
+	type hookKey struct{}
+	registry := NewRegistry()
+	_ = registry.Register("ok", func(ctx context.Context, _ json.RawMessage) (any, error) {
+		if ctx.Value(hookKey{}) != "hooked" {
+			t.Error("OnRequest context did not reach handler")
+		}
+		return true, nil
+	})
+	_ = registry.Register("panic", func(context.Context, json.RawMessage) (any, error) {
+		panic("hook-visible panic")
+	})
+	type event struct {
+		method       string
+		code         int
+		notification bool
+		cause        string
+	}
+	var events []event
+	hooks := Hooks{
+		OnRequest: func(ctx context.Context, _ *Request) context.Context {
+			return context.WithValue(ctx, hookKey{}, "hooked")
+		},
+		OnResponse: func(_ context.Context, request *Request, response *Response) {
+			observed := event{notification: response == nil}
+			if request != nil {
+				observed.method = request.Method
+			}
+			if response != nil && response.Error != nil {
+				observed.code = response.Error.Code
+				if cause := response.Error.Unwrap(); cause != nil {
+					observed.cause = cause.Error()
+				}
+			}
+			events = append(events, observed)
+		},
+	}
+	dispatcher := NewDispatcher(registry, WithHooks(hooks))
+	inputs := []string{
+		`{`,
+		`{"jsonrpc":"2.0","id":1}`,
+		`{"jsonrpc":"2.0","method":"missing","id":2}`,
+		`{"jsonrpc":"2.0","method":"ok"}`,
+		`{"jsonrpc":"2.0","method":"panic","id":3}`,
+	}
+	for _, input := range inputs {
+		dispatcher.Dispatch(context.Background(), []byte(input))
+	}
+	if len(events) != len(inputs) {
+		t.Fatalf("hook events = %d, want %d: %#v", len(events), len(inputs), events)
+	}
+	if events[0].code != CodeParseError || events[0].method != "" {
+		t.Errorf("parse event = %#v", events[0])
+	}
+	if events[1].code != CodeInvalidRequest || events[1].method != "" {
+		t.Errorf("invalid event = %#v", events[1])
+	}
+	if events[2].code != CodeMethodNotFound || events[2].method != "missing" {
+		t.Errorf("missing event = %#v", events[2])
+	}
+	if !events[3].notification || events[3].method != "ok" {
+		t.Errorf("notification event = %#v", events[3])
+	}
+	if events[4].code != CodeInternalError || !strings.Contains(events[4].cause, "goroutine") {
+		t.Errorf("panic event = %#v", events[4])
+	}
+}
+
+func TestDispatcherLifecycleHooksCannotBreakDispatch(t *testing.T) {
+	t.Parallel()
+
+	hooks := Hooks{
+		OnRequest:  func(context.Context, *Request) context.Context { panic("start") },
+		OnResponse: func(context.Context, *Request, *Response) { panic("finish") },
+	}
+	response, ok := NewDispatcher(nil, WithHooks(hooks)).Dispatch(
+		context.Background(),
+		[]byte(`{"jsonrpc":"2.0","method":"missing","id":1}`),
+	)
+	if !ok {
+		t.Fatal("hook panic suppressed response")
+	}
+	assertJSONEqual(t, response, []byte(`{"jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found"},"id":1}`))
 }
 
 func assertJSONEqual(t *testing.T, got, want []byte) {

@@ -226,11 +226,14 @@ func NewRequest(method string, params any, id ID) (Request, error) {
 	if id.Kind() == IDMissing {
 		return Request{}, errors.New("jsonrpc: request id is required")
 	}
+	if !id.valid() {
+		return Request{}, errors.New("jsonrpc: request id is invalid")
+	}
 	encoded, err := encodeParams(params)
 	if err != nil {
 		return Request{}, err
 	}
-	return Request{JSONRPC: Version, Method: method, Params: encoded, ID: id, idSet: true}, nil
+	return Request{JSONRPC: Version, Method: method, Params: encoded, ID: id, idSet: true, methodSet: true}, nil
 }
 
 func NewNotification(method string, params any) (Request, error) {
@@ -241,11 +244,11 @@ func NewNotification(method string, params any) (Request, error) {
 	if err != nil {
 		return Request{}, err
 	}
-	return Request{JSONRPC: Version, Method: method, Params: encoded}, nil
+	return Request{JSONRPC: Version, Method: method, Params: encoded, methodSet: true}, nil
 }
 
 func validateClientMethod(method string) error {
-	if method == "" || strings.HasPrefix(method, "rpc.") {
+	if strings.HasPrefix(method, "rpc.") {
 		return ErrInvalidMethodName
 	}
 	return nil
@@ -266,4 +269,4 @@ func encodeParams(params any) (json.RawMessage, error) {
 	return encoded, nil
 }
 
-func idKey(id ID) string { return strconv.Itoa(int(id.Kind())) + ":" + string(id.raw) }
+func idKey(id ID) string { return strconv.Itoa(int(id.Kind())) + ":" + id.canonical }

@@ -23,13 +23,13 @@ func TestClientOptionsAndDefensivePaths(t *testing.T) {
 	if err := client.Call(context.Background(), "discard", nil, nil); err != nil {
 		t.Fatalf("Call(discard) error = %v", err)
 	}
-	if err := client.Call(context.Background(), "", nil, nil); !errors.Is(err, ErrInvalidMethodName) {
+	if err := client.Call(context.Background(), "rpc.reserved", nil, nil); !errors.Is(err, ErrInvalidMethodName) {
 		t.Errorf("Call(invalid method) error = %v", err)
 	}
 	if err := client.Call(context.Background(), "method", make(chan int), nil); err == nil {
 		t.Error("Call(unencodable params) unexpectedly succeeded")
 	}
-	if err := client.Notify(context.Background(), "", nil); !errors.Is(err, ErrInvalidMethodName) {
+	if err := client.Notify(context.Background(), "rpc.reserved", nil); !errors.Is(err, ErrInvalidMethodName) {
 		t.Errorf("Notify(invalid method) error = %v", err)
 	}
 	if err := client.Notify(context.Background(), "method", make(chan int)); err == nil {
@@ -49,10 +49,10 @@ func TestClientBatchDefensivePaths(t *testing.T) {
 	if err := client.Batch(context.Background(), nil); err == nil {
 		t.Error("Batch(nil call) unexpectedly succeeded")
 	}
-	if err := client.Batch(context.Background(), &BatchCall{Method: ""}); !errors.Is(err, ErrInvalidMethodName) {
+	if err := client.Batch(context.Background(), &BatchCall{Method: "rpc.reserved"}); !errors.Is(err, ErrInvalidMethodName) {
 		t.Errorf("Batch(invalid request) error = %v", err)
 	}
-	if err := client.Batch(context.Background(), &BatchCall{Method: "", Notification: true}); !errors.Is(err, ErrInvalidMethodName) {
+	if err := client.Batch(context.Background(), &BatchCall{Method: "rpc.reserved", Notification: true}); !errors.Is(err, ErrInvalidMethodName) {
 		t.Errorf("Batch(invalid notification) error = %v", err)
 	}
 	if err := client.Batch(context.Background(), &BatchCall{Method: "notice", Notification: true}); err != nil {
@@ -99,6 +99,15 @@ func TestProtocolDefensivePaths(t *testing.T) {
 	if err != nil || string(missing) != "null" {
 		t.Errorf("Marshal(missing ID) = %s, %v", missing, err)
 	}
+	if (ID{}).valid() {
+		t.Error("missing ID is valid")
+	}
+	if !NullID().valid() {
+		t.Error("null ID is invalid")
+	}
+	if (ID{kind: IDKind(99), raw: json.RawMessage(`null`)}).valid() {
+		t.Error("unknown ID kind is valid")
+	}
 	var id ID
 	if err := json.Unmarshal([]byte(`"unterminated`), &id); err == nil {
 		t.Error("Unmarshal(malformed ID) unexpectedly succeeded")
@@ -109,6 +118,12 @@ func TestProtocolDefensivePaths(t *testing.T) {
 	var request Request
 	if err := json.Unmarshal([]byte(`{`), &request); err == nil {
 		t.Error("Unmarshal(malformed request) unexpectedly succeeded")
+	}
+	if err := request.UnmarshalJSON([]byte(`{`)); err == nil {
+		t.Error("Request.UnmarshalJSON(malformed) unexpectedly succeeded")
+	}
+	if !NumberID("invalid").Equal(NumberID("invalid")) {
+		t.Error("identical invalid NumberID values do not compare equal")
 	}
 
 	for _, input := range []string{
@@ -125,6 +140,15 @@ func TestProtocolDefensivePaths(t *testing.T) {
 	var malformedResponse Response
 	if err := malformedResponse.UnmarshalJSON([]byte(`{`)); err == nil {
 		t.Error("Response.UnmarshalJSON(malformed) unexpectedly succeeded")
+	}
+	for _, input := range []string{
+		`{"code":"bad","message":"message"}`,
+		`{"code":1,"message":2}`,
+	} {
+		var rpcErr Error
+		if err := json.Unmarshal([]byte(input), &rpcErr); err == nil {
+			t.Errorf("Unmarshal(invalid error %s) unexpectedly succeeded", input)
+		}
 	}
 
 	response := Response{JSONRPC: Version, ID: NullID(), idSet: true, resultSet: true}
@@ -174,6 +198,15 @@ func TestServerDefensivePaths(t *testing.T) {
 	nilMapper := NewDispatcher(registry, WithErrorMapper(func(error) *Error { return nil }))
 	response, _ = nilMapper.Dispatch(context.Background(), []byte(`{"jsonrpc":"2.0","method":"failure","id":3}`))
 	assertJSONEqual(t, response, []byte(`{"jsonrpc":"2.0","error":{"code":-32603,"message":"Internal error"},"id":3}`))
+
+	fallback := marshalResponse(Response{
+		JSONRPC:   Version,
+		Result:    json.RawMessage(`{`),
+		ID:        NumberID("1"),
+		resultSet: true,
+		idSet:     true,
+	})
+	assertJSONEqual(t, fallback, []byte(`{"jsonrpc":"2.0","error":{"code":-32603,"message":"Internal error"},"id":null}`))
 }
 
 func TestHTTPDefensivePaths(t *testing.T) {
