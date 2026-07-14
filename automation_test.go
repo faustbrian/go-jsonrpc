@@ -27,6 +27,8 @@ func TestRepositoryAutomationContract(t *testing.T) {
 		".github/workflows/release.yml": {
 			"tags:",
 			`"v*"`,
+			"go run ./cmd/semvercheck",
+			"merge-base --is-ancestor",
 			"gh release create",
 		},
 		".github/dependabot.yml":    {"gomod", "github-actions"},
