@@ -82,6 +82,10 @@ static-analysis, vulnerability, and benchmark automation.
 - [Adoption guide](docs/adoption.md)
 - [Troubleshooting](docs/troubleshooting.md)
 - [FAQ](docs/faq.md)
+- [Compatibility policy](docs/compatibility.md)
+- [Versioning and release guide](docs/releasing.md)
+- [Roadmap](ROADMAP.md)
+- [Changelog](CHANGELOG.md)
 
 Runnable programs live under [`examples`](examples).
 
