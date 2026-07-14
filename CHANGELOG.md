@@ -49,6 +49,7 @@ All notable changes to this project are documented here. The format is based on
 
 ### Fixed
 
+- Bound fuzz-smoke concurrency to avoid deadline flakes on high-core hosts.
 - Reject duplicate members in request, response, and error envelopes instead
   of inheriting `encoding/json`'s last-member-wins behavior. This defensive
   interoperability policy prevents ambiguous peers from interpreting the same
