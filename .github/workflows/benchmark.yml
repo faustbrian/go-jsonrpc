@@ -11,14 +11,14 @@ jobs:
   benchmark:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
           cache: true
       - name: Run benchmarks
         run: go test -run='^$' -bench=. -benchmem ./... | tee benchmark.txt
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: benchmark-results
           path: benchmark.txt
