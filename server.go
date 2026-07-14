@@ -237,7 +237,13 @@ func (d *Dispatcher) begin(ctx context.Context, request *Request) (observed cont
 			observed = ctx
 		}
 	}()
-	return d.hooks.OnRequest(ctx, request)
+	if request == nil {
+		return d.hooks.OnRequest(ctx, nil)
+	}
+	requestCopy := *request
+	requestCopy.Params = append(json.RawMessage(nil), request.Params...)
+	requestCopy.ID.raw = append(json.RawMessage(nil), request.ID.raw...)
+	return d.hooks.OnRequest(ctx, &requestCopy)
 }
 
 func (d *Dispatcher) finish(ctx context.Context, request *Request, response *Response) {
@@ -279,7 +285,7 @@ func marshalResponse(response Response) []byte {
 
 func DecodeParams[T any](params json.RawMessage) (T, *Error) {
 	var value T
-	if len(params) == 0 {
+	if len(bytes.TrimSpace(params)) == 0 {
 		return value, InvalidParams()
 	}
 	if !namedParameterNamesMatch[T](params) {

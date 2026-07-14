@@ -1,7 +1,9 @@
 package jsonrpc
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -41,14 +43,19 @@ func (e *Error) UnmarshalJSON(data []byte) error {
 	e.Code, e.Message, e.Data, e.cause = 0, "", nil, nil
 	e.codeSet, e.messageSet = wire.Code != nil, wire.Message != nil
 	if e.codeSet {
+		if bytes.Equal(bytes.TrimSpace(wire.Code), []byte("null")) {
+			return errors.New("jsonrpc: error code must be an integer")
+		}
 		if err := json.Unmarshal(wire.Code, &e.Code); err != nil {
 			return err
 		}
 	}
 	if e.messageSet {
-		if err := json.Unmarshal(wire.Message, &e.Message); err != nil {
-			return err
+		trimmed := bytes.TrimSpace(wire.Message)
+		if len(trimmed) == 0 || trimmed[0] != '"' {
+			return errors.New("jsonrpc: error message must be a string")
 		}
+		_ = json.Unmarshal(wire.Message, &e.Message)
 	}
 	e.Data = wire.Data
 	return nil

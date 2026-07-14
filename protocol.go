@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math/big"
+	"strings"
 )
 
 const Version = "2.0"
@@ -91,11 +92,62 @@ func (id *ID) UnmarshalJSON(data []byte) error {
 }
 
 func canonicalNumber(value string) string {
-	number := new(big.Rat)
-	if _, ok := number.SetString(value); ok {
-		return number.RatString()
+	index := 0
+	sign := ""
+	if index < len(value) && value[index] == '-' {
+		sign = "-"
+		index++
 	}
-	return value
+	integerStart := index
+	for index < len(value) && value[index] >= '0' && value[index] <= '9' {
+		index++
+	}
+	if integerStart == index {
+		return value
+	}
+	coefficient := value[integerStart:index]
+	fractionDigits := 0
+	if index < len(value) && value[index] == '.' {
+		index++
+		fractionStart := index
+		for index < len(value) && value[index] >= '0' && value[index] <= '9' {
+			index++
+		}
+		if fractionStart == index {
+			return value
+		}
+		fractionDigits = index - fractionStart
+		coefficient += value[fractionStart:index]
+	}
+	exponent := new(big.Int)
+	if index < len(value) && (value[index] == 'e' || value[index] == 'E') {
+		index++
+		exponentStart := index
+		if index < len(value) && (value[index] == '+' || value[index] == '-') {
+			index++
+		}
+		digitsStart := index
+		for index < len(value) && value[index] >= '0' && value[index] <= '9' {
+			index++
+		}
+		if digitsStart == index || index != len(value) {
+			return value
+		}
+		exponent.SetString(value[exponentStart:index], 10)
+	} else if index != len(value) {
+		return value
+	}
+	coefficient = strings.TrimLeft(coefficient, "0")
+	if coefficient == "" {
+		return "0"
+	}
+	trimmed := strings.TrimRight(coefficient, "0")
+	adjustment := len(coefficient) - len(trimmed) - fractionDigits
+	exponent.Add(exponent, big.NewInt(int64(adjustment)))
+	if exponent.Sign() == 0 {
+		return sign + trimmed
+	}
+	return sign + trimmed + "e" + exponent.String()
 }
 
 type Request struct {
@@ -122,9 +174,11 @@ func (r *Request) UnmarshalJSON(data []byte) error {
 	r.JSONRPC, r.Params = wire.JSONRPC, wire.Params
 	r.methodSet = wire.Method != nil
 	if r.methodSet {
-		if err := json.Unmarshal(wire.Method, &r.Method); err != nil {
-			return err
+		trimmed := bytes.TrimSpace(wire.Method)
+		if len(trimmed) == 0 || trimmed[0] != '"' {
+			return errors.New("jsonrpc: method must be a string")
 		}
+		_ = json.Unmarshal(wire.Method, &r.Method)
 	}
 	r.idSet = wire.ID != nil
 	if r.idSet {

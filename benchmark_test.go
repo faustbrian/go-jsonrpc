@@ -39,3 +39,14 @@ func BenchmarkDispatchBatch(b *testing.B) {
 		dispatcher.Dispatch(context.Background(), payload)
 	}
 }
+
+func BenchmarkIDHostileExponent(b *testing.B) {
+	payload := []byte(`1e1000000`)
+	b.ReportAllocs()
+	for b.Loop() {
+		var id ID
+		if err := json.Unmarshal(payload, &id); err != nil {
+			b.Fatal(err)
+		}
+	}
+}

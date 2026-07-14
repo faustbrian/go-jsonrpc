@@ -252,6 +252,9 @@ func TestDecodeParams(t *testing.T) {
 	if _, rpcErr = DecodeParams[input](nil); rpcErr == nil || rpcErr.Code != CodeInvalidParams {
 		t.Errorf("DecodeParams(nil) = %v", rpcErr)
 	}
+	if _, rpcErr = DecodeParams[input](json.RawMessage(`   `)); rpcErr == nil || rpcErr.Code != CodeInvalidParams {
+		t.Errorf("DecodeParams(whitespace) = %v", rpcErr)
+	}
 	if _, rpcErr = DecodeParams[input](json.RawMessage(`{"name":"Ada"} {}`)); rpcErr == nil || rpcErr.Code != CodeInvalidParams {
 		t.Errorf("DecodeParams(trailing JSON) = %v", rpcErr)
 	}
@@ -431,6 +434,33 @@ func TestDispatcherLifecycleHooksCannotBreakDispatch(t *testing.T) {
 		t.Fatal("hook panic suppressed response")
 	}
 	assertJSONEqual(t, response, []byte(`{"jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found"},"id":1}`))
+}
+
+func TestDispatcherOnRequestHookReceivesIsolatedRequest(t *testing.T) {
+	t.Parallel()
+
+	var executed bool
+	registry := NewRegistry()
+	_ = registry.Register("notice", func(context.Context, json.RawMessage) (any, error) {
+		executed = true
+		return nil, nil
+	})
+	hooks := Hooks{OnRequest: func(ctx context.Context, request *Request) context.Context {
+		request.Method = "mutated"
+		request.ID = StringID("forced-response")
+		request.Params[0] = '['
+		return ctx
+	}}
+	response, ok := NewDispatcher(registry, WithHooks(hooks)).Dispatch(
+		context.Background(),
+		[]byte(`{"jsonrpc":"2.0","method":"notice","params":{"safe":true}}`),
+	)
+	if ok || response != nil {
+		t.Errorf("mutated notification produced response %s", response)
+	}
+	if !executed {
+		t.Error("hook mutation changed dispatched method")
+	}
 }
 
 func assertJSONEqual(t *testing.T, got, want []byte) {

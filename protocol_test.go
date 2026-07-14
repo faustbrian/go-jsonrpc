@@ -76,6 +76,42 @@ func TestIDRejectsInvalidJSONTypes(t *testing.T) {
 	}
 }
 
+func TestIDNumberCanonicalizationIsBounded(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		left  string
+		right string
+	}{
+		{left: "1e1000000", right: "10e999999"},
+		{left: "1.2300e2", right: "123"},
+		{left: "-0", right: "0e999999"},
+	}
+	for _, test := range tests {
+		var left, right ID
+		if err := json.Unmarshal([]byte(test.left), &left); err != nil {
+			t.Fatal(err)
+		}
+		if err := json.Unmarshal([]byte(test.right), &right); err != nil {
+			t.Fatal(err)
+		}
+		if !left.Equal(right) {
+			t.Errorf("numeric IDs %s and %s do not compare equal", test.left, test.right)
+		}
+		if len(left.canonical) > len(test.left)+8 {
+			t.Errorf("canonical %s expanded from %d to %d bytes", test.left, len(test.left), len(left.canonical))
+		}
+	}
+	for _, invalid := range []string{"-", "1.", "1e+", "1e1x", "1x"} {
+		if got := canonicalNumber(invalid); got != invalid {
+			t.Errorf("canonicalNumber(%q) = %q", invalid, got)
+		}
+	}
+	if canonicalNumber("1e+1") != canonicalNumber("10") || canonicalNumber("1e-1") != canonicalNumber("0.1") {
+		t.Error("signed exponents do not canonicalize by value")
+	}
+}
+
 func TestRequestValidation(t *testing.T) {
 	t.Parallel()
 
@@ -100,6 +136,7 @@ func TestRequestValidation(t *testing.T) {
 	invalid := []string{
 		`{"jsonrpc":"1.0","method":"x","id":1}`,
 		`{"jsonrpc":"2.0","id":1}`,
+		`{"jsonrpc":"2.0","method":null,"id":1}`,
 		`{"jsonrpc":"2.0","method":"x","params":"bad","id":1}`,
 		`{"jsonrpc":"2.0","method":"x","params":null,"id":1}`,
 	}
@@ -191,6 +228,8 @@ func TestResponseValidation(t *testing.T) {
 		`{"jsonrpc":"2.0","result":19}`,
 		`{"jsonrpc":"2.0","error":{"message":"missing code"},"id":1}`,
 		`{"jsonrpc":"2.0","error":{"code":1},"id":1}`,
+		`{"jsonrpc":"2.0","error":{"code":null,"message":"bad"},"id":1}`,
+		`{"jsonrpc":"2.0","error":{"code":1,"message":null},"id":1}`,
 	}
 	for _, input := range invalid {
 		var response Response
