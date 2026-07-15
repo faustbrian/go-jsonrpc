@@ -140,4 +140,3 @@ be described as an equivalent type-system guarantee.
 - Updates to this baseline MUST bump its identifier and be propagated across
   `go-jsonapi`, `go-jsonrpc`, `go-queue`, `go-wire`, `go-tabular`,
   and the monorepo Go standard.
-
