@@ -16,7 +16,7 @@ security issue requires a documented change.
 
 - The official JSON-RPC 2.0 specification.
 - Go's `encoding/json`, `net/http`, `context`, and concurrency contracts.
-- The repository's `GOAL.md`, `AGENTS.md`, compatibility policy, public API,
+- The repository's `.ai/GOAL.md`, `AGENTS.md`, compatibility policy, public API,
   examples, conformance fixtures, and changelog.
 - Published security guidance applicable to HTTP servers, clients, parsers,
   resource exhaustion, and dependency use.

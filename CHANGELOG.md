@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Changed
+
+- Added the `GO-SAFETY-1` ownership, concurrency, race, fuzz, resource, and
+  benchmark standard with an executable `make safety` gate.
+- Moved AI planning and hardening briefs into `.ai/` and clarified the
+  separate purposes of project and third-party notice files.
+
 ### Added
 
 - A standardized OSS repository skeleton covering policy, documentation,

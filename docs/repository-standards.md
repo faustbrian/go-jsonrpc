@@ -7,22 +7,28 @@ This repository follows the shared maintenance baseline used by the
 
 Every repository contains `.gitattributes`, `.gitignore`,
 `.golangci.yml`, `AGENTS.md`, `CHANGELOG.md`, `CLAUDE.md`,
-`CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `GOAL.md`,
-`GOAL_HARDEN.md`, `LICENSE`, `Makefile`, `NOTICE`, `README.md`,
-`ROADMAP.md`, `SECURITY.md`, `THIRD_PARTY_NOTICES.md`, `llms.txt`,
-and `llms-full.txt`.
+`CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `LICENSE`, `Makefile`, `NOTICE`,
+`README.md`, `ROADMAP.md`, `SECURITY.md`, `THIRD_PARTY_NOTICES.md`,
+`llms.txt`, and `llms-full.txt`.
 
-`NOTICE` and `THIRD_PARTY_NOTICES.md` remain present even when they only
-record that no copied or vendored code requires attribution. A package may
-retain a different approved OSS license when provenance requires it.
+AI planning and execution briefs live in `.ai/GOAL.md` and
+`.ai/GOAL_HARDEN.md`, keeping internal agent material separate from the
+package's public documentation surface.
+
+`NOTICE` identifies the project and its ownership. `THIRD_PARTY_NOTICES.md`
+separately records attribution and provenance for copied, forked, generated,
+or vendored third-party source. Both remain present even when no third-party
+source requires attribution. A package may retain a different approved OSS
+license when provenance requires it.
 
 ## Mandatory Documentation
 
 The shared taxonomy is lowercase kebab-case and includes a documentation
 index, quickstart, adoption guide, API reference, architecture, examples,
 cookbook, FAQ, troubleshooting, migration, compatibility, performance,
-hardening, security, and releasing guide. Package-specific documents extend
-this taxonomy without renaming shared concepts.
+hardening, security, Go safety and concurrency, and releasing guide.
+Package-specific documents extend this taxonomy without renaming shared
+concepts.
 
 ## Mandatory Automation
 
@@ -33,7 +39,11 @@ reachable dependency scanning uses `govulncheck`.
 
 The common Make interface is `format`, `format-check`, `test`,
 `test-race`, `coverage`, `vet`, `lint`, `fuzz`, `benchmark`,
-`docs`, `vuln`, `check`, and semantic release targets.
+`safety`, `docs`, `vuln`, `check`, and semantic release targets.
+
+The package family shares the `GO-SAFETY-1` baseline. It forbids `unsafe`,
+cgo, and `go:linkname` in production code and standardizes ownership,
+goroutine lifecycle, race, fuzz, resource-bound, leak, and benchmark evidence.
 
 ## Approved Package-Specific Differences
 

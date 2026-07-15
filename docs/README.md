@@ -12,6 +12,7 @@ Use this index to choose the shortest path from evaluation to production.
 ## Design And Operations
 
 - [Architecture](architecture.md)
+- [Go safety and concurrency](go-safety-and-concurrency.md)
 - [Protocol conformance](conformance.md)
 - [Middleware](middleware.md)
 - [Compatibility](compatibility.md)

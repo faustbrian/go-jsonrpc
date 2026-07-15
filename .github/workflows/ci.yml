@@ -31,6 +31,8 @@ jobs:
         run: go mod tidy -diff
       - name: Check formatting
         run: make format-check
+      - name: Enforce Go source safety
+        run: ./scripts/check-go-safety.sh
       - name: Run static analysis
         run: make vet
       - name: Run race tests

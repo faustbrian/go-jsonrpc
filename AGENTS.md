@@ -55,6 +55,24 @@ These rules apply to all package work in this repository. RFC 2119 keywords
 - You SHOULD prefer explicit context propagation, deterministic cleanup, and
   bounded resource lifetimes over globals or hidden background work.
 
+## Go Safety Baseline
+
+- You MUST follow the `GO-SAFETY-1` requirements in
+  `docs/go-safety-and-concurrency.md`.
+- Production code MUST NOT use `unsafe`, cgo, or `go:linkname`.
+- Every goroutine and mutable shared value MUST have explicit ownership,
+  synchronization, and lifecycle semantics.
+- Concurrency MUST be bounded, cancellation-aware, and tested with
+  deterministic coordination rather than timing sleeps.
+- Concurrency-sensitive changes MUST pass `make safety`, including source
+  policy, vet, lint, race, and fuzz gates.
+- Untrusted parsing and protocol boundaries MUST have fuzz properties and
+  explicit resource-bound tests.
+- Performance work MUST include allocation-reporting benchmarks and
+  statistically supported before-and-after evidence.
+- You MUST NOT describe these controls as equivalent to Rust's compile-time
+  ownership and data-race guarantees.
+
 ## Repository-Specific Rules
 
 - JSON-RPC parsing, validation, dispatch, transport, and error behavior MUST

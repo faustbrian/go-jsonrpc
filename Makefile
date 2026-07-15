@@ -3,7 +3,7 @@ GOLANGCI_LINT ?= golangci-lint
 FUZZ_TIME ?= 2s
 BENCH_TIME ?= 100ms
 
-.PHONY: benchmark check coverage docs format format-check fuzz lint \
+.PHONY: benchmark check coverage docs format format-check fuzz lint safety \
 	release-major release-minor release-patch test test-race vet vuln
 
 format:
@@ -27,6 +27,13 @@ vet:
 lint:
 	$(GOLANGCI_LINT) run --timeout=5m
 
+safety:
+	./scripts/check-go-safety.sh
+	$(GO) vet ./...
+	$(GOLANGCI_LINT) run --timeout=5m
+	$(GO) test -race ./...
+	./scripts/check-fuzz.sh "$(FUZZ_TIME)"
+
 fuzz:
 	./scripts/check-fuzz.sh "$(FUZZ_TIME)"
 
@@ -39,7 +46,7 @@ docs:
 vuln:
 	$(GO) run golang.org/x/vuln/cmd/govulncheck@v1.6.0 ./...
 
-check: format-check vet lint test-race coverage fuzz benchmark docs vuln
+check: format-check safety coverage benchmark docs vuln
 
 release-patch:
 	@scripts/release.sh patch

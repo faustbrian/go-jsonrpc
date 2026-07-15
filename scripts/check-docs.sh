@@ -10,8 +10,8 @@ required=(
   CLAUDE.md
   CODE_OF_CONDUCT.md
   CONTRIBUTING.md
-  GOAL.md
-  GOAL_HARDEN.md
+  .ai/GOAL.md
+  .ai/GOAL_HARDEN.md
   LICENSE
   Makefile
   NOTICE
@@ -26,6 +26,7 @@ required=(
   docs/adoption.md
   docs/api.md
   docs/architecture.md
+  docs/go-safety-and-concurrency.md
   docs/examples.md
   docs/cookbook.md
   docs/faq.md

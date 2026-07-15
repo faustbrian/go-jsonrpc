@@ -24,5 +24,6 @@
 - [Roadmap](ROADMAP.md)
 - [Changelog](CHANGELOG.md)
 - [JSON-RPC 2.0 conformance matrix](docs/conformance.md)
+- [Go Safety And Concurrency](docs/go-safety-and-concurrency.md)
 - [Middleware, authentication, and observability](docs/middleware.md)
 - [Repository Standards](docs/repository-standards.md)

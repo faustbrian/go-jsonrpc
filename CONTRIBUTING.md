@@ -23,11 +23,12 @@ make check
 - Add regression coverage before fixing a defect.
 - Maintain meaningful 100% production-code coverage.
 - Update public examples and documentation with behavior changes.
-- Update `GOAL.md` or `GOAL_HARDEN.md` when scope or acceptance criteria
+- Update `.ai/GOAL.md` or `.ai/GOAL_HARDEN.md` when scope or acceptance criteria
   change.
 - Add an `Unreleased` entry to `CHANGELOG.md`.
 - Explain every dependency addition, upgrade, or removal.
-- Update `NOTICE` and `THIRD_PARTY_NOTICES.md` when attribution changes.
+- Update `NOTICE` when project ownership changes and
+  `THIRD_PARTY_NOTICES.md` when third-party attribution changes.
 
 ## Package-Specific Review
 
