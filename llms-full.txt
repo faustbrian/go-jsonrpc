@@ -1,8 +1,18 @@
-# jsonrpc Complete Documentation
+# go-jsonrpc Complete Documentation
 
 ## Source: README.md
 
 # jsonrpc
+
+[![CI](https://github.com/faustbrian/go-jsonrpc/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/faustbrian/go-jsonrpc/actions/workflows/ci.yml)
+[![CodeQL](https://img.shields.io/badge/CodeQL-required-blue)](https://github.com/faustbrian/go-jsonrpc/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-100%25_required-blue)](CONTRIBUTING.md#verification)
+[![Mutation](https://img.shields.io/badge/mutation-100%25_required-blue)](CONTRIBUTING.md#verification)
+[![Documentation](https://img.shields.io/badge/docs-checked_in_CI-blue)](docs/)
+[![Go Reference](https://pkg.go.dev/badge/github.com/faustbrian/go-jsonrpc.svg)](https://pkg.go.dev/github.com/faustbrian/go-jsonrpc)
+[![Release](https://img.shields.io/github/v/release/faustbrian/go-jsonrpc?sort=semver)](https://github.com/faustbrian/go-jsonrpc/releases)
+[![Go](https://img.shields.io/badge/go-1.26.6-00ADD8?logo=go)](https://go.dev/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 `jsonrpc` is a transport-neutral, full JSON-RPC 2.0 server and client
 package. Protocol behavior is explicit, errors are auditable, middleware is
@@ -11,8 +21,7 @@ fuzz-tested.
 
 ## Status
 
-The package is pre-v1 and has no published release. Its current API and wire
-behavior form the candidate contract for the first `v1.0.0` tag. Production
+The package has a stable v1 API and wire contract. Production
 package code is held to meaningful 100% statement coverage.
 
 ## Requirements
@@ -899,7 +908,7 @@ pass an `http.Client` with an explicit `CheckRedirect` policy through
 ## Between Package Versions
 
 Read [CHANGELOG.md](../CHANGELOG.md) and [compatibility.md](compatibility.md)
-before upgrading. Pre-v1 releases may contain documented breaking changes.
+before upgrading. Breaking changes require a new major release.
 Never infer wire compatibility from compilation alone; replay representative
 requests and errors.
 
@@ -1291,68 +1300,60 @@ versions where they install tools and use the module's declared Go version.
 
 # Contributing
 
-## Before Opening A Change
+## Before Editing
 
-Use an issue for changes affecting JSON-RPC protocol behavior, dispatch, transports, middleware, clients, and conformance. Explain the user problem,
-compatibility impact, and why the behavior belongs in this generic package.
+1. Read [`AGENTS.md`](AGENTS.md) and the affected module's goals and docs.
+2. Run `make inventory` and the narrow baseline gate for the module.
+3. Identify owned dependencies and reverse dependants in `modules.json`.
+4. Preserve unrelated work and generated/corpus provenance.
 
-## Development Setup
+## Changes
 
-Requirements:
+Keep commits focused and conventional. Update every affected changelog with
+the behavior and migration impact. Public API changes require compatibility
+evidence and documentation. Specification behavior requires a decision record,
+fixture coverage, and interoperability evidence.
 
-- Go 1.26.6 or later
-- Git
-- `golangci-lint` v2
+New direct dependencies and dependency updates must follow the
+[dependency governance policy](AGENTS.md#dependencies-and-supply-chain). Package-local
+update bots are forbidden; the root policy owns every module and action update.
 
-```sh
-go mod download
+Specification-backed changes must follow the
+[specification governance contract](AGENTS.md#design), update
+the affected stable decision entries, and complete the Specification Decisions
+section of the pull request template. An unresolved interpretation or stale
+source pin is release-blocking; peer behavior cannot silently select policy.
+
+Required mutation gates must finish with zero surviving viable mutants.
+
+Do not add package-local workflows, permanent replacements, machine-specific
+paths, bypass flags, broad mutation exclusions, or aggregate quality metrics
+that hide a failing package.
+
+## Verification
+
+Run during development:
+
+```bash
+make inventory
 make check
 ```
 
-## Change Requirements
+Before submitting a repository-wide change:
 
-- Add regression coverage before fixing a defect.
-- Maintain meaningful 100% production-code coverage.
-- Update public examples and documentation with behavior changes.
-- Update `.ai/GOAL.md` or `.ai/GOAL_HARDEN.md` when scope or acceptance criteria
-  change.
-- Add an `Unreleased` entry to `CHANGELOG.md`.
-- Explain every dependency addition, upgrade, or removal.
-- Update `NOTICE` when project ownership changes and
-  `THIRD_PARTY_NOTICES.md` when third-party attribution changes.
-
-## Package-Specific Review
-
-Preserve JSON-RPC 2.0 request, notification, ID, batch, response, and error semantics. Every protocol change MUST include conformance and malformed-input evidence.
-
-### Specification decision review
-
-Changes to parsing, validation, serialization, resolution, transport mapping,
-or protocol behavior MUST review the
-[specification decision register](docs/specification-decisions.md). Update an
-existing stable decision instead of silently changing it. A newly discovered
-ambiguity MUST remain visibly unresolved until its normative source, credible
-interpretations, selected behavior, consequences, executable evidence, and
-reconsideration condition are recorded.
-
-## Local Verification
-
-Run the complete local gate:
-
-```sh
-make check
+```bash
+make ci
 ```
 
-## Commits And Pull Requests
+The full scheduled and release gate is `make ci`. Report every unavailable or
+failing command; do not describe partial results as release-ready.
 
-Use focused conventional commits with a body explaining why the change is
-needed. Pull requests must describe compatibility impact, tests, verification
-commands and results, documentation updates, and changelog updates.
+## Adding A Module
 
-## Reporting Security Issues
-
-Do not open a public issue for a suspected vulnerability. Follow
-[SECURITY.md](SECURITY.md).
+Follow [repository structure policy](AGENTS.md#repository-structure). New modules
+require an explicit purpose, ownership boundary, dependency review, package
+catalog entry, full quality gates, documentation, changelog, license, security
+policy, compatibility plan, and release dry-run.
 
 ## Source: SECURITY.md
 
@@ -1360,9 +1361,9 @@ Do not open a public issue for a suspected vulnerability. Follow
 
 ## Supported Versions
 
-Before `v1.0.0`, security fixes are applied to the latest revision of
-`main`. After the first stable release, supported release lines and
-end-of-support dates will be documented here.
+Security fixes are applied to the latest stable v1 release and `main`.
+Additional supported release lines and end-of-support dates will be documented
+here when offered.
 
 ## Reporting A Vulnerability
 
@@ -1432,12 +1433,14 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-08-25
+
 ### Documentation
 
 - Replace obsolete standalone-repository links and workflow claims with
   monorepo-canonical targets and current release guidance.
-- Keep package status and compatibility guidance explicit that `v1.0.0` is
-  planned but has not been published.
+- Document the package's initial stable `v1.0.0` scope and compatibility
+  boundary.
 
 - Link the package README to the repository-wide Golib documentation portal.
 
@@ -1448,6 +1451,7 @@ All notable changes to this project are documented here. The format is based on
 
 ### Changed
 
+- Publish the module from its standalone `github.com/faustbrian/go-jsonrpc` identity while preserving its documented API and behavior.
 - Pin the official JSON-RPC 2.0 example corpus and make security, resource,
   compatibility, and wire consequences explicit for every protocol decision.
 - Reject duplicate members at every nested object depth during strict
@@ -1479,9 +1483,9 @@ All notable changes to this project are documented here. The format is based on
   verification so every viable JSON-RPC mutation is detected without timeout
   or equivalent boundary predicates.
 
-### Planned v1.0.0 scope
+### v1.0.0 scope
 
-The following initial scope is implemented but remains unreleased.
+The following initial scope is included in `v1.0.0`.
 
 #### Added
 
@@ -1564,7 +1568,8 @@ The following initial scope is implemented but remains unreleased.
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/
-[Unreleased]: https://github.com/faustbrian/go-jsonrpc/commits/main
+[Unreleased]: https://github.com/faustbrian/go-jsonrpc/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/faustbrian/go-jsonrpc/releases/tag/v1.0.0
 
 ## Source: docs/conformance.md
 

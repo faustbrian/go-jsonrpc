@@ -1,4 +1,4 @@
-# jsonrpc
+# go-jsonrpc
 
 > Documentation map for package users, adopters, operators, and contributors.
 
