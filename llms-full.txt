@@ -23,7 +23,7 @@ package code is held to meaningful 100% statement coverage.
 ## Installation
 
 ```sh
-go get github.com/faustbrian/golib/pkg/jsonrpc
+go get github.com/faustbrian/go-jsonrpc
 ```
 
 ## Quickstart
@@ -341,7 +341,7 @@ transport failure and ensure methods are appropriately idempotent.
 # Public API reference
 
 This is the semantic reference for the exported surface. Exact Go signatures
-are also available through `go doc github.com/faustbrian/golib/pkg/jsonrpc`.
+are also available through `go doc github.com/faustbrian/go-jsonrpc`.
 
 ## Protocol
 
@@ -1272,7 +1272,7 @@ command.
    client:
 
    ```sh
-   go get github.com/faustbrian/golib/pkg/jsonrpc@vX.Y.Z
+   go get github.com/faustbrian/go-jsonrpc@vX.Y.Z
    ```
 
 ## Failure handling
@@ -1495,7 +1495,7 @@ The following initial scope is implemented but remains unreleased.
   option and inspectable oversized-response sentinel.
 - Transport-neutral JSON-RPC 2.0 request, notification, response, and batch
   processing.
-- Canonical public module path at `github.com/faustbrian/golib/pkg/jsonrpc`.
+- Canonical public module path at `github.com/faustbrian/go-jsonrpc`.
 - Concurrency-safe server registry, middleware, request context, safe error
   mapping, and panic containment.
 - Plain `net/http` handler with media-type and body-size enforcement.
@@ -1564,7 +1564,7 @@ The following initial scope is implemented but remains unreleased.
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/
-[Unreleased]: https://github.com/faustbrian/golib/commits/main/pkg/jsonrpc
+[Unreleased]: https://github.com/faustbrian/go-jsonrpc/commits/main
 
 ## Source: docs/conformance.md
 

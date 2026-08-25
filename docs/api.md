@@ -1,7 +1,7 @@
 # Public API reference
 
 This is the semantic reference for the exported surface. Exact Go signatures
-are also available through `go doc github.com/faustbrian/golib/pkg/jsonrpc`.
+are also available through `go doc github.com/faustbrian/go-jsonrpc`.
 
 ## Protocol
 

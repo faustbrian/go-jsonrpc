@@ -1,61 +1,11 @@
-GO ?= go
-GOLANGCI_LINT ?= golangci-lint
-FUZZ_TIME ?= 2s
-BENCH_TIME ?= 100ms
+SHELL := /usr/bin/env bash
 
-.PHONY: benchmark check conformance coverage docs format format-check fuzz \
-	lint safety release-major release-minor release-patch test test-race vet vuln
+.PHONY: check ci inventory repository-check
 
-format:
-	gofmt -w .
+check:
+	./.golib/scripts/with-disposable-go-cache.sh ./.golib/scripts/run-modules.sh check --all
 
-format-check:
-	test -z "$$(gofmt -l .)"
+ci: repository-check check
 
-test:
-	$(GO) test ./...
-
-conformance:
-	$(GO) test . -count=1
-
-test-race:
-	$(GO) test -race ./...
-
-coverage:
-	./scripts/check-coverage.sh
-
-vet:
-	$(GO) vet ./...
-
-lint:
-	$(GOLANGCI_LINT) run --timeout=5m
-
-safety:
-	./scripts/check-go-safety.sh
-	$(GO) vet ./...
-	$(GOLANGCI_LINT) run --timeout=5m
-	$(GO) test -race ./...
-	./scripts/check-fuzz.sh "$(FUZZ_TIME)"
-
-fuzz:
-	./scripts/check-fuzz.sh "$(FUZZ_TIME)"
-
-benchmark:
-	$(GO) test ./... -run '^$$' -bench . -benchmem -benchtime="$(BENCH_TIME)"
-
-docs:
-	./scripts/check-docs.sh
-
-vuln:
-	$(GO) run golang.org/x/vuln/cmd/govulncheck@v1.6.0 ./...
-
-check: format-check safety coverage benchmark docs vuln
-
-release-patch:
-	@scripts/release.sh patch
-
-release-minor:
-	@scripts/release.sh minor
-
-release-major:
-	@scripts/release.sh major
+inventory repository-check:
+	./.golib/scripts/repository-check.sh

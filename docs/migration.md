@@ -15,6 +15,6 @@
 ## Between Package Versions
 
 Read [CHANGELOG.md](../CHANGELOG.md) and [compatibility.md](compatibility.md)
-before upgrading. Pre-v1 releases may contain documented breaking changes.
+before upgrading. Breaking changes require a new major release.
 Never infer wire compatibility from compilation alone; replay representative
 requests and errors.

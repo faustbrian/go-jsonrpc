@@ -1,5 +1,15 @@
 # jsonrpc
 
+[![CI](https://github.com/faustbrian/go-jsonrpc/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/faustbrian/go-jsonrpc/actions/workflows/ci.yml)
+[![CodeQL](https://img.shields.io/badge/CodeQL-required-blue)](https://github.com/faustbrian/go-jsonrpc/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-100%25_required-blue)](CONTRIBUTING.md#verification)
+[![Mutation](https://img.shields.io/badge/mutation-100%25_required-blue)](CONTRIBUTING.md#verification)
+[![Documentation](https://img.shields.io/badge/docs-checked_in_CI-blue)](docs/)
+[![Go Reference](https://pkg.go.dev/badge/github.com/faustbrian/go-jsonrpc.svg)](https://pkg.go.dev/github.com/faustbrian/go-jsonrpc)
+[![Release](https://img.shields.io/github/v/release/faustbrian/go-jsonrpc?sort=semver)](https://github.com/faustbrian/go-jsonrpc/releases)
+[![Go](https://img.shields.io/badge/go-1.26.6-00ADD8?logo=go)](https://go.dev/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 `jsonrpc` is a transport-neutral, full JSON-RPC 2.0 server and client
 package. Protocol behavior is explicit, errors are auditable, middleware is
 composable, HTTP is optional, and malformed input is conformance- and
@@ -7,8 +17,7 @@ fuzz-tested.
 
 ## Status
 
-The package is pre-v1 and has no published release. Its current API and wire
-behavior form the candidate contract for the first `v1.0.0` tag. Production
+The package has a stable v1 API and wire contract. Production
 package code is held to meaningful 100% statement coverage.
 
 ## Requirements
@@ -19,7 +28,7 @@ package code is held to meaningful 100% statement coverage.
 ## Installation
 
 ```sh
-go get github.com/faustbrian/golib/pkg/jsonrpc
+go get github.com/faustbrian/go-jsonrpc
 ```
 
 ## Quickstart

@@ -6,12 +6,14 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-08-25
+
 ### Documentation
 
 - Replace obsolete standalone-repository links and workflow claims with
   monorepo-canonical targets and current release guidance.
-- Keep package status and compatibility guidance explicit that `v1.0.0` is
-  planned but has not been published.
+- Document the package's initial stable `v1.0.0` scope and compatibility
+  boundary.
 
 - Link the package README to the repository-wide Golib documentation portal.
 
@@ -22,6 +24,7 @@ All notable changes to this project are documented here. The format is based on
 
 ### Changed
 
+- Publish the module from its standalone `github.com/faustbrian/go-jsonrpc` identity while preserving its documented API and behavior.
 - Pin the official JSON-RPC 2.0 example corpus and make security, resource,
   compatibility, and wire consequences explicit for every protocol decision.
 - Reject duplicate members at every nested object depth during strict
@@ -53,9 +56,9 @@ All notable changes to this project are documented here. The format is based on
   verification so every viable JSON-RPC mutation is detected without timeout
   or equivalent boundary predicates.
 
-### Planned v1.0.0 scope
+### v1.0.0 scope
 
-The following initial scope is implemented but remains unreleased.
+The following initial scope is included in `v1.0.0`.
 
 #### Added
 
@@ -69,7 +72,7 @@ The following initial scope is implemented but remains unreleased.
   option and inspectable oversized-response sentinel.
 - Transport-neutral JSON-RPC 2.0 request, notification, response, and batch
   processing.
-- Canonical public module path at `github.com/faustbrian/golib/pkg/jsonrpc`.
+- Canonical public module path at `github.com/faustbrian/go-jsonrpc`.
 - Concurrency-safe server registry, middleware, request context, safe error
   mapping, and panic containment.
 - Plain `net/http` handler with media-type and body-size enforcement.
@@ -138,4 +141,5 @@ The following initial scope is implemented but remains unreleased.
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/
-[Unreleased]: https://github.com/faustbrian/golib/commits/main/pkg/jsonrpc
+[Unreleased]: https://github.com/faustbrian/go-jsonrpc/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/faustbrian/go-jsonrpc/releases/tag/v1.0.0

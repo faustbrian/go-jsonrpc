@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/faustbrian/golib/pkg/jsonrpc/internal/semver"
+	"github.com/faustbrian/go-jsonrpc/internal/semver"
 )
 
 func main() {

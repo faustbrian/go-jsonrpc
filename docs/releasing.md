@@ -60,7 +60,7 @@ command.
    client:
 
    ```sh
-   go get github.com/faustbrian/golib/pkg/jsonrpc@vX.Y.Z
+   go get github.com/faustbrian/go-jsonrpc@vX.Y.Z
    ```
 
 ## Failure handling

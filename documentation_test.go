@@ -66,7 +66,7 @@ func TestCoreDocumentationContract(t *testing.T) {
 	required := map[string][]string{
 		"README.md": {
 			"JSON-RPC 2.0",
-			"go get github.com/faustbrian/golib/pkg/jsonrpc",
+			"go get github.com/faustbrian/go-jsonrpc",
 			"Package Guarantees",
 		},
 		"docs/quickstart.md":   {"Server", "Client", "Notification", "Batch"},
@@ -125,14 +125,14 @@ func TestPlannedV1DocumentationContract(t *testing.T) {
 		"CHANGELOG.md": {
 			"## [Unreleased]",
 			"### Planned v1.0.0 scope",
-			"[Unreleased]: https://github.com/faustbrian/golib/commits/main/pkg/jsonrpc",
+			"[Unreleased]: https://github.com/faustbrian/go-jsonrpc/commits/main",
 		},
 		"README.md":             {"pre-v1 and has no published release"},
 		"SECURITY.md":           {"Before `v1.0.0`", "security fixes are applied"},
 		"ROADMAP.md":            {"## Post-v1 roadmap"},
 		"docs/compatibility.md": {"Beginning with the first `v1.0.0` release"},
 		"docs/api.md":           {"Starting with `v1.0.0`"},
-		"go.mod":                {"module github.com/faustbrian/golib/pkg/jsonrpc"},
+		"go.mod":                {"module github.com/faustbrian/go-jsonrpc"},
 	}
 
 	for path, fragments := range required {

@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "repository": "github.com/faustbrian/go-jsonrpc",
+  "packages": [
+    {
+      "module_directory": ".",
+      "directory": ".",
+      "name": "jsonrpc",
+      "import_path": "github.com/faustbrian/go-jsonrpc",
+      "kind": "public",
+      "production": true,
+      "executable": true,
+      "coverage_required": true,
+      "build_required": true,
+      "build_tags": []
+    },
+    {
+      "module_directory": ".",
+      "directory": "cmd/semvercheck",
+      "name": "main",
+      "import_path": "github.com/faustbrian/go-jsonrpc/cmd/semvercheck",
+      "kind": "tooling",
+      "production": false,
+      "executable": true,
+      "coverage_required": false,
+      "build_required": true,
+      "build_tags": []
+    },
+    {
+      "module_directory": ".",
+      "directory": "examples/client",
+      "name": "main",
+      "import_path": "github.com/faustbrian/go-jsonrpc/examples/client",
+      "kind": "example",
+      "production": false,
+      "executable": true,
+      "coverage_required": false,
+      "build_required": true,
+      "build_tags": []
+    },
+    {
+      "module_directory": ".",
+      "directory": "examples/e2e",
+      "name": "main",
+      "import_path": "github.com/faustbrian/go-jsonrpc/examples/e2e",
+      "kind": "example",
+      "production": false,
+      "executable": true,
+      "coverage_required": false,
+      "build_required": true,
+      "build_tags": []
+    },
+    {
+      "module_directory": ".",
+      "directory": "examples/server",
+      "name": "main",
+      "import_path": "github.com/faustbrian/go-jsonrpc/examples/server",
+      "kind": "example",
+      "production": false,
+      "executable": true,
+      "coverage_required": false,
+      "build_required": true,
+      "build_tags": []
+    },
+    {
+      "module_directory": ".",
+      "directory": "internal/semver",
+      "name": "semver",
+      "import_path": "github.com/faustbrian/go-jsonrpc/internal/semver",
+      "kind": "tooling",
+      "production": false,
+      "executable": true,
+      "coverage_required": false,
+      "build_required": true,
+      "build_tags": []
+    }
+  ]
+}
