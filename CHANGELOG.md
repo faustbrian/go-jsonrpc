@@ -8,6 +8,9 @@ All notable changes to this project are documented here. The format is based on
 
 ### Changed
 
+- Validate action pinning from the standalone repository root and leave
+  repository-foundation policy to the authoritative repository contract.
+
 - Exclude intentional nested modules from root local-proxy archives so local,
   bootstrap, CI, and public module checksums describe the same source
   boundary.
