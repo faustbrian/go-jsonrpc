@@ -1435,6 +1435,9 @@ All notable changes to this project are documented here. The format is based on
 
 ### Fixed
 
+- Strengthen single-request boundary verification at the exact byte limit and
+  for invalid UTF-8 payloads.
+
 - Align the executable documentation contract with the stable v1 repository
   state and current standalone contributor and conduct policies.
 
