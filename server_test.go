@@ -190,6 +190,11 @@ func TestDispatcherDispatchSinglePreservesProtocolBoundaries(t *testing.T) {
 		WithMaxDispatchBytes(64),
 		WithMaxNestingDepth(2),
 	)
+	exactLimitPayload := []byte(`{"jsonrpc":"2.0","method":"missing","id":1}`)
+	exactLimitPayload = append(
+		exactLimitPayload,
+		bytes.Repeat([]byte(" "), 64-len(exactLimitPayload))...,
+	)
 	tests := map[string]struct {
 		payload []byte
 		code    int
@@ -203,6 +208,16 @@ func TestDispatcherDispatchSinglePreservesProtocolBoundaries(t *testing.T) {
 		"oversized": {
 			payload: make([]byte, 65),
 			code:    CodeRequestLimitExceeded,
+			reply:   true,
+		},
+		"exact byte limit": {
+			payload: exactLimitPayload,
+			code:    CodeMethodNotFound,
+			reply:   true,
+		},
+		"invalid UTF-8": {
+			payload: []byte{0xff},
+			code:    CodeParseError,
 			reply:   true,
 		},
 		"malformed": {
