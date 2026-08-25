@@ -216,7 +216,10 @@ func TestDispatcherDispatchSinglePreservesProtocolBoundaries(t *testing.T) {
 			reply:   true,
 		},
 		"invalid UTF-8": {
-			payload: []byte{0xff},
+			payload: append(
+				append([]byte(`{"jsonrpc":"2.0","method":"`), 0xff),
+				[]byte(`","id":1}`)...,
+			),
 			code:    CodeParseError,
 			reply:   true,
 		},
