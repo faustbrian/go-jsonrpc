@@ -220,8 +220,8 @@ func TestDispatcherDispatchSinglePreservesProtocolBoundaries(t *testing.T) {
 				append([]byte(`{"jsonrpc":"2.0","method":"`), 0xff),
 				[]byte(`","id":1}`)...,
 			),
-			code:    CodeParseError,
-			reply:   true,
+			code:  CodeParseError,
+			reply: true,
 		},
 		"malformed": {
 			payload: []byte(`{"jsonrpc":`),
