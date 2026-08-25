@@ -1433,6 +1433,31 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Fixed
+
+- Align the executable documentation contract with the stable v1 repository
+  state and current standalone contributor and conduct policies.
+
+### Changed
+
+- Validate action pinning from the standalone repository root and leave
+  repository-foundation policy to the authoritative repository contract.
+
+- Exclude intentional nested modules from root local-proxy archives so local,
+  bootstrap, CI, and public module checksums describe the same source
+  boundary.
+
+- Track the pinned documentation-tool lockfile so clean CI checkouts install
+  the exact validated cspell dependency.
+
+- Reconcile standalone dependency checksums against deterministic current
+  module archives so CI, local verification, and release consumers resolve
+  identical content.
+
+- Harden standalone documentation validation with deterministic spelling and
+  link checks, package-specific documentation gates, and repository-local
+  contributor guidance.
+
 ## [1.0.0] - 2026-08-25
 
 ### Documentation

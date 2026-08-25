@@ -92,9 +92,9 @@ func TestCoreDocumentationContract(t *testing.T) {
 		},
 		"CHANGELOG.md":            {"Unreleased", "Keep a Changelog"},
 		"ROADMAP.md":              {"v1.0.0", "WebSocket", "OpenRPC"},
-		"CONTRIBUTING.md":         {"Development Setup", "Pull Requests", "protocol change"},
+		"CONTRIBUTING.md":         {"Before Editing", "Verification", "Specification behavior"},
 		"SECURITY.md":             {"privately", "Supported Versions", "Response Process"},
-		"CODE_OF_CONDUCT.md":      {"Contributor Covenant", "Enforcement"},
+		"CODE_OF_CONDUCT.md":      {"Participants", "Maintainers", "conduct concerns"},
 		"LICENSE":                 {"MIT License", "Permission is hereby granted"},
 		"examples/server/main.go": {"NewHTTPHandler", "Register"},
 		"examples/client/main.go": {"NewHTTPTransport", "Call"},
@@ -118,17 +118,17 @@ func TestCoreDocumentationContract(t *testing.T) {
 	}
 }
 
-func TestPlannedV1DocumentationContract(t *testing.T) {
+func TestV1DocumentationContract(t *testing.T) {
 	t.Parallel()
 
 	required := map[string][]string{
 		"CHANGELOG.md": {
 			"## [Unreleased]",
-			"### Planned v1.0.0 scope",
-			"[Unreleased]: https://github.com/faustbrian/go-jsonrpc/commits/main",
+			"## [1.0.0]",
+			"[Unreleased]: https://github.com/faustbrian/go-jsonrpc/compare/v1.0.0...HEAD",
 		},
-		"README.md":             {"pre-v1 and has no published release"},
-		"SECURITY.md":           {"Before `v1.0.0`", "security fixes are applied"},
+		"README.md":             {"stable v1 API and wire contract"},
+		"SECURITY.md":           {"latest stable v1 release", "Security fixes are applied"},
 		"ROADMAP.md":            {"## Post-v1 roadmap"},
 		"docs/compatibility.md": {"Beginning with the first `v1.0.0` release"},
 		"docs/api.md":           {"Starting with `v1.0.0`"},

@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Fixed
+
+- Align the executable documentation contract with the stable v1 repository
+  state and current standalone contributor and conduct policies.
+
 ### Changed
 
 - Validate action pinning from the standalone repository root and leave
