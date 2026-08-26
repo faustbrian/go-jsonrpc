@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Documentation
+
+- Replace archived monorepo and AI-generated documentation entry points with
+  a standalone, human-oriented documentation structure.
+
 ## [1.0.0] - 2026-08-25
 
 ### Fixed
@@ -42,8 +47,6 @@ All notable changes to this project are documented here. The format is based on
   monorepo-canonical targets and current release guidance.
 - Document the package's initial stable `v1.0.0` scope and compatibility
   boundary.
-
-- Link the package README to the repository-wide Golib documentation portal.
 
 ### Compatibility
 

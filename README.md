@@ -77,13 +77,11 @@ notification, and batch examples.
 ## Documentation
 
 Start with the [documentation index](docs/README.md), [quickstart](docs/quickstart.md),
-[adoption guide](docs/adoption.md), and [API reference](docs/api.md). Use the
+[guide for adopting the package](docs/adoption.md), and [API reference](docs/api.md). Use the
 [conformance matrix](docs/conformance.md), [middleware guide](docs/middleware.md),
-[hardening report](docs/hardening.md), and
-[specification decision register](docs/specification-decisions.md) for
-production review.
+[security guide](docs/security.md), and [specification decision register](docs/specification-decisions.md)
+for production review.
 
-AI tools can use [llms.txt](llms.txt) and [llms-full.txt](llms-full.txt).
 Release history is maintained in [CHANGELOG.md](CHANGELOG.md).
 Runnable programs live under [examples](examples).
 
@@ -111,7 +109,9 @@ untrusted clients.
 third-party policy are recorded in [NOTICE](NOTICE) and
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-## Ecosystem
+## Related packages
 
-Use the [Golib documentation portal](https://github.com/faustbrian/golib/blob/main/docs/index.md)
-to choose companion packages, supported stacks, recipes, and operations guidance.
+- [OpenRPC](https://github.com/faustbrian/go-openrpc) models and validates
+  OpenRPC descriptions and integrates discovery with this package.
+- [service](https://github.com/faustbrian/go-service) provides application
+  lifecycle and HTTP serving without changing JSON-RPC semantics.

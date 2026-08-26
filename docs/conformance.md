@@ -65,7 +65,7 @@ Status meanings:
 | An empty Array returns one invalid-request Response Object. | [Batch](https://www.jsonrpc.org/specification#batch) | `dispatchBatch` | `TestDispatcherBatchEdgeCases` | [Architecture](architecture.md#protocol) | Verified |
 | Invalid nonempty members each return an invalid-request response in the response Array. | [Batch](https://www.jsonrpc.org/specification#batch) | `dispatchItem` | `TestDispatcherBatchEdgeCases`, mixed official fixture | [Architecture](architecture.md#protocol) | Verified |
 | A notification-only batch MUST NOT return an empty Array and should return nothing. | [Batch](https://www.jsonrpc.org/specification#batch) | `dispatchBatch` | `TestDispatcherBatchEdgeCases`, `TestHTTPHandlerRequestAndNotification` | [Architecture](architecture.md#transport) | Verified |
-| Processing must be bounded against hostile batch size. | Defensive runtime policy | Dispatcher byte and member limits | `TestDispatcherRejectsResourceLimitViolationsBeforeDispatch` | [Hardening report](hardening.md#findings) | Policy verified |
+| Processing must be bounded against hostile batch size. | Defensive runtime policy | Dispatcher byte and member limits | `TestDispatcherRejectsResourceLimitViolationsBeforeDispatch` | [Security guide](security.md) | Policy verified |
 
 ## Defensive JSON and client policy
 

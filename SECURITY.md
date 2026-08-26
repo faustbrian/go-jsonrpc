@@ -29,6 +29,5 @@ authorization, rate limiting, deadlines, secret handling, deployment policy,
 and business-level validation. Package safeguards do not replace those
 controls.
 
-See [docs/security.md](docs/security.md) and
-[docs/hardening.md](docs/hardening.md) for adoption guidance and maintained
-evidence.
+See [docs/security.md](docs/security.md) for adoption guidance and the
+maintained security contract.
