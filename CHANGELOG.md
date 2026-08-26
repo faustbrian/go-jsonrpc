@@ -8,6 +8,9 @@ All notable changes to this project are documented here. The format is based on
 
 ### Documentation
 
+- Clarify how shared safety-policy updates are coordinated across standalone
+  repositories.
+
 - Replace archived monorepo and AI-generated documentation entry points with
   a standalone, human-oriented documentation structure.
 
