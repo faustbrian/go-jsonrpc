@@ -54,8 +54,8 @@ be described as an equivalent type-system guarantee.
 
 ### Static And Source Analysis
 
-- `make safety` MUST reject forbidden low-level features and run vet, lint,
-  race, and fuzz gates.
+- `make check` MUST reject forbidden low-level features and run the shared
+  vet, lint, race, and fuzz gates.
 - `go vet`, Staticcheck, security linting, error checks, context checks, and
   HTTP-body ownership checks MUST remain enabled through the repository lint
   configuration.

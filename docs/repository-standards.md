@@ -30,14 +30,14 @@ concepts.
 
 ## Mandatory Automation
 
-Every repository provides pinned-SHA workflows for CI, benchmarks, scheduled
-fuzzing, security, and tagged releases. CI tests Go 1.25.x as the supported
-minimum line and current stable Go. Dependency review runs on pull requests;
-reachable dependency scanning uses `govulncheck`.
+Every repository provides one pinned-SHA CI caller. The shared workflow owns
+the benchmark, scheduled fuzzing, security, dependency, and release checks;
+the repository keeps only its package-specific configuration and evidence. CI
+uses the Go version declared by the repository manifest, and dependency review
+runs on pull requests.
 
-The common Make interface is `format`, `format-check`, `test`,
-`test-race`, `coverage`, `vet`, `lint`, `fuzz`, `benchmark`,
-`safety`, `docs`, `vuln`, `check`, and semantic release targets.
+The local entry points are `make inventory`, `make check`, and `make ci`.
+They invoke the same released `golib` contract used by CI.
 
 The package family shares the `GO-SAFETY-1` baseline. It forbids `unsafe`,
 cgo, and `go:linkname` in production code and standardizes ownership,

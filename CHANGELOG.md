@@ -8,6 +8,9 @@ All notable changes to this project are documented here. The format is based on
 
 ### Documentation
 
+- Replace copied repository tooling with the released `go-library-tools`
+  contract while preserving JSON-RPC conformance and mutation evidence.
+
 - Clarify how shared safety-policy updates are coordinated across standalone
   repositories.
 
