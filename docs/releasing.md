@@ -1,76 +1,38 @@
 # Versioning and release guide
 
 Releases are immutable semantic-version tags created from a clean, reviewed
-`main` commit. The GitHub tag workflow reruns tests, race detection, coverage,
-and vet before creating release notes.
+`main` commit. The repository workflow runs the shared `golib` release contract
+before publishing release notes.
 
-## Choose a semantic version
+## Prepare a release
 
-- Patch: backward-compatible fixes and documentation corrections.
-- Minor: backward-compatible features and new optional APIs.
-- Major: post-v1 breaking exported API or documented behavior changes.
+1. Confirm the public API and documented protocol compatibility impact.
+2. Move the relevant `CHANGELOG.md` entries into a dated release section.
+3. Run `make ci` and resolve every required failure.
+4. Run `golib release check` and review its release metadata result.
+5. Merge the release preparation through normal review.
+6. Create and push an annotated `vMAJOR.MINOR.PATCH` tag from the verified
+   `main` commit.
+7. Confirm the tag workflow completes and the module is available from the Go
+   module proxy.
 
-Use a prerelease such as `v1.0.0-rc.1` when external adopters need to validate a
-candidate. Never move or replace a published tag.
+Published tags are never force-updated or reused. A broken release is fixed by
+publishing a new patch version.
 
-## Release commands
+## Release rehearsal
 
-After adding a dated changelog section and release link, run the target for the
-intended compatibility level:
+Use the `release_dry_run` workflow dispatch input to exercise the shared release
+checks without publishing a tag. The rehearsal must pass before a stable tag is
+created.
+
+## Clean-consumer verification
+
+In a clean temporary module, install the released package and compile a
+minimal client:
 
 ```sh
-make release-patch
-make release-minor
-make release-major
+go get github.com/faustbrian/go-jsonrpc@vX.Y.Z
 ```
 
-Each target calculates the next stable version from the latest stable tag,
-requires a clean `main` branch synchronized with `origin/main`, runs the
-complete release checks, and creates a local annotated tag. It never pushes the
-tag. Review the tag before running the printed `git push origin vX.Y.Z`
-command.
-
-## Release checklist
-
-1. Confirm `CHANGELOG.md` moves relevant Unreleased entries under the version
-   and date.
-2. Confirm `go.mod`, examples, and documentation use the canonical public
-   module path.
-3. Confirm the compatibility impact and migration notes for every observable
-   protocol or API change.
-4. Run:
-
-   ```sh
-   test -z "$(gofmt -l .)"
-   go vet ./...
-   staticcheck ./...
-   go test -race ./...
-   scripts/check-coverage.sh
-   go test -run='^$' -bench=. -benchmem ./...
-   go test -fuzz=FuzzDispatcher -fuzztime=30s .
-   go test -fuzz=FuzzRequestUnmarshal -fuzztime=30s .
-   govulncheck ./...
-   ```
-
-5. Verify all required GitHub Actions checks are green on the release commit.
-6. Create an annotated tag: `git tag -a vX.Y.Z -m "vX.Y.Z"`.
-7. Push only that tag: `git push origin vX.Y.Z`.
-8. Confirm the release workflow created the GitHub release and generated notes.
-9. In a clean temporary module, run the following command and compile a minimal
-   client:
-
-   ```sh
-   go get github.com/faustbrian/go-jsonrpc@vX.Y.Z
-   ```
-
-## Failure handling
-
-If verification fails, fix forward with a normal commit and restart the
-checklist. Do not bypass hooks, force-update the tag, or edit a published tag.
-If a broken version was published, document it and release the next patch.
-
-## Reproducibility
-
-This repository publishes a Go library, so no binary artifact is required. The
-tag identifies the source consumed by the Go module proxy. Workflows pin tool
-versions where they install tools and use the module's declared Go version.
+The package's public module identity, API baseline, conformance fixtures, and
+documentation must all refer to the same release.

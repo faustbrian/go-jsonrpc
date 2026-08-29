@@ -7,7 +7,8 @@ type createParams struct {
     Reference string `json:"reference"`
 }
 
-params, rpcErr := jsonrpc.DecodeParams[createParams](raw)
+decode := jsonrpc.DecodeParams[createParams]
+params, rpcErr := decode(raw)
 if rpcErr != nil || params.Reference == "" {
     return nil, jsonrpc.InvalidParams()
 }

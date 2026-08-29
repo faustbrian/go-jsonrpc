@@ -8,12 +8,10 @@ This repository follows the shared maintenance baseline used by the
 Every repository contains `.gitattributes`, `.gitignore`,
 `.golangci.yml`, `AGENTS.md`, `CHANGELOG.md`, `CLAUDE.md`,
 `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `LICENSE`, `Makefile`, `NOTICE`,
-`README.md`, `ROADMAP.md`, `SECURITY.md`, `THIRD_PARTY_NOTICES.md`,
-`llms.txt`, and `llms-full.txt`.
+`README.md`, `ROADMAP.md`, `SECURITY.md`, and `THIRD_PARTY_NOTICES.md`.
 
-AI planning and execution briefs live in `.ai/GOAL.md` and
-`.ai/GOAL_HARDEN.md`, keeping internal agent material separate from the
-package's public documentation surface.
+Completed implementation plans and verification snapshots belong in issue
+tracking or Git history rather than the released source tree.
 
 `NOTICE` identifies the project and its ownership. `THIRD_PARTY_NOTICES.md`
 separately records attribution and provenance for copied, forked, generated,
@@ -24,22 +22,22 @@ license when provenance requires it.
 ## Mandatory Documentation
 
 The shared taxonomy is lowercase kebab-case and includes a documentation
-index, quickstart, adoption guide, API reference, architecture, examples,
+index, quickstart, usage guidance, API reference, architecture, examples,
 cookbook, FAQ, troubleshooting, migration, compatibility, performance,
-hardening, security, Go safety and concurrency, and releasing guide.
+security, Go safety and concurrency, and releasing guide.
 Package-specific documents extend this taxonomy without renaming shared
 concepts.
 
 ## Mandatory Automation
 
-Every repository provides pinned-SHA workflows for CI, benchmarks, scheduled
-fuzzing, security, and tagged releases. CI tests Go 1.25.x as the supported
-minimum line and current stable Go. Dependency review runs on pull requests;
-reachable dependency scanning uses `govulncheck`.
+Every repository provides one pinned-SHA CI caller. The shared workflow owns
+the benchmark, scheduled fuzzing, security, dependency, and release checks;
+the repository keeps only its package-specific configuration and evidence. CI
+uses the Go version declared by the repository manifest, and dependency review
+runs on pull requests.
 
-The common Make interface is `format`, `format-check`, `test`,
-`test-race`, `coverage`, `vet`, `lint`, `fuzz`, `benchmark`,
-`safety`, `docs`, `vuln`, `check`, and semantic release targets.
+The local entry points are `make inventory`, `make check`, and `make ci`.
+They invoke the same released `golib` contract used by CI.
 
 The package family shares the `GO-SAFETY-1` baseline. It forbids `unsafe`,
 cgo, and `go:linkname` in production code and standardizes ownership,

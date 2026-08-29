@@ -19,5 +19,6 @@ errors. Transport security and credential handling are outside this package.
 
 ## Reporting
 
-Follow [SECURITY.md](../SECURITY.md) for private vulnerability reporting and
-[hardening.md](hardening.md) for the current audit evidence.
+Follow [SECURITY.md](../SECURITY.md) for private vulnerability reporting. The
+[conformance contract](conformance.md) records the maintained protocol and
+defensive-input behavior.
