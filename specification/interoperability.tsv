@@ -1,0 +1,11 @@
+decision_id	peer_or_corpus	observed_behavior	classification	executable_evidence
+JSONRPC-DEC-001	creachadair/jrpc2	Invalid id-less batch members produce validation errors.	specification ambiguity	TestDispatcherBatchEdgeCases
+JSONRPC-DEC-002	creachadair/jrpc2 v1.3.5 differential harness	This package treats explicit null as a request and replies with id null; the peer treats it as a notification and returns HTTP 204.	deliberate policy difference	TestObservationsMatchRecordedMatrix
+JSONRPC-DEC-003	creachadair/jrpc2 v1.3.5 differential harness	Both preserve 9007199254740993 without binary floating-point loss; this package correlates 1, 1.0, and 1e0 by exact numeric value while the peer exposes them as distinct lexical IDs.	deliberate policy difference	TestObservationsMatchRecordedMatrix
+JSONRPC-DEC-004	creachadair/jrpc2	The peer returns parse error while this package returns the normative Invalid Request object.	deliberate policy difference	TestSpecificationExamples
+JSONRPC-DEC-005	JSON-RPC 2.0 mixed-batch example	Every invalid member contributes an Invalid Request response.	specification ambiguity	TestSpecificationExamples
+JSONRPC-DEC-006	creachadair/jrpc2	Both implementations currently preserve response order without making it portable.	deliberate policy difference	TestClientBatch
+JSONRPC-DEC-007	JSON-RPC 2.0 error examples	Malformed JSON and invalid envelopes retain distinct error codes.	specification ambiguity	TestDispatcherProtocolErrors
+JSONRPC-DEC-008	RFC 8259 interoperability guidance	Ambiguous duplicate members are rejected instead of selecting a value.	deliberate policy difference	TestProtocolDecodersRejectDuplicateMembers
+JSONRPC-DEC-009	creachadair/jrpc2 v1.3.5 differential harness	Both implementations return HTTP 204 with an empty body for notification-only requests.	specification ambiguity	TestObservationsMatchRecordedMatrix
+JSONRPC-DEC-010	creachadair/jrpc2 v1.3.5 differential harness	Both require POST and use HTTP 200 for JSON-RPC errors; this package additionally accepts application/json-rpc and application/*+json while the peer returns HTTP 415.	deliberate policy difference	TestObservationsMatchRecordedMatrix

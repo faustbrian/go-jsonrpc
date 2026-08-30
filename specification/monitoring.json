@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-08-30",
+  "review_interval_days": 90,
+  "authorities": [
+    {
+      "id": "jsonrpc-2.0-source",
+      "kind": "specification",
+      "version": "JSON-RPC 2.0",
+      "url": "https://www.jsonrpc.org/specification",
+      "sha256": "8fe1edfdca511d309e712e47447457ea5159b728ec02071a84593aed692aefeb",
+      "specifications": ["JSON-RPC 2.0", "RFC 8259 JSON"]
+    },
+    {
+      "id": "jsonrpc-2.0-releases",
+      "kind": "releases",
+      "version": "",
+      "url": "https://www.jsonrpc.org/specification",
+      "sha256": "8fe1edfdca511d309e712e47447457ea5159b728ec02071a84593aed692aefeb",
+      "specifications": ["JSON-RPC 2.0"]
+    },
+    {
+      "id": "rfc8259-source",
+      "kind": "specification",
+      "version": "RFC 8259",
+      "url": "https://www.rfc-editor.org/rfc/rfc8259.txt",
+      "sha256": "61a5378f4255c720beb2a4b4a63b29540147c140f36988bf086291989b4cd2d7",
+      "specifications": ["RFC 8259 JSON", "JSON-RPC 2.0"]
+    },
+    {
+      "id": "rfc8259-errata",
+      "kind": "errata",
+      "version": "",
+      "url": "https://errata.rfc-editor.org/search/?rfc_number=8259&presentation=records",
+      "sha256": "5819db2e0233addf17ed540db88cf92cbefda5a60c38877e0d4cbf6b876b7cf4",
+      "specifications": ["RFC 8259 JSON"]
+    },
+    {
+      "id": "rfc9110-source",
+      "kind": "specification",
+      "version": "RFC 9110",
+      "url": "https://www.rfc-editor.org/rfc/rfc9110.txt",
+      "sha256": "21c1cdce6ab0e5509b04d84a28000836c7a087cf786efe6f04877ebfff47232a",
+      "specifications": ["RFC 9110 HTTP Semantics", "JSON-RPC 2.0"]
+    },
+    {
+      "id": "rfc9110-errata",
+      "kind": "errata",
+      "version": "",
+      "url": "https://errata.rfc-editor.org/search/?rfc_number=9110&presentation=records",
+      "sha256": "38bd006c96f8963d58573f704c5313a5f81968b90738c03ade0b036ec7bbdf4b",
+      "specifications": ["RFC 9110 HTTP Semantics"]
+    },
+    {
+      "id": "rfc6839-source",
+      "kind": "specification",
+      "version": "RFC 6839",
+      "url": "https://www.rfc-editor.org/rfc/rfc6839.txt",
+      "sha256": "f754a5e85371359a1b6609427ab9a759dc012af7f656a8741fdac4942abf8c13",
+      "specifications": ["RFC 6839 Structured Syntax Suffixes", "JSON-RPC 2.0"]
+    },
+    {
+      "id": "rfc6839-errata",
+      "kind": "errata",
+      "version": "",
+      "url": "https://errata.rfc-editor.org/search/?rfc_number=6839&presentation=records",
+      "sha256": "39318ef04278bb8771f84eafc0e9cb40b86eb891e7f606ed5b32d2b7cc256b3e",
+      "specifications": ["RFC 6839 Structured Syntax Suffixes"]
+    }
+  ]
+}

@@ -8,6 +8,24 @@ All notable changes to this project are documented here. The format is based on
 
 ### Documentation
 
+- Make the [specification decision register](docs/specification-decisions.md)
+  machine-auditable with exact source and errata monitoring, attributable
+  conformance evidence, and classified interoperability results. Pin a
+  reproducible `creachadair/jrpc2` v1.3.5 differential harness for null IDs,
+  numeric ID equivalence, and HTTP binding decisions without adding the peer
+  dependency to the public module.
+
+  - JSONRPC-DEC-001 sha256:56d72c967858ae0ed974a7175e3974e21645a8ee01cbfdcf402c3f1748412bed
+  - JSONRPC-DEC-002 sha256:e2898b8880a5b946f6378b98acd691fc4b67a8d7c1adb543e67e61a73a17bf84
+  - JSONRPC-DEC-003 sha256:f709c7085240ac271f821bc8be8f8a5cff3cdcd6427ef543a5f2ab5e103ac5bf
+  - JSONRPC-DEC-004 sha256:1be90684db04140fabb420f35597ab36f8b5d81f229678d82d3b0a3d7777b4df
+  - JSONRPC-DEC-005 sha256:b2bcee89e0d0dc65c2cdbf55fc18b1268a716479ae2ad1a0da3a41ddab100c61
+  - JSONRPC-DEC-006 sha256:e3134a8d0891f445195ffa91638c46d126303b924edc4d56626f4a64e6fff6db
+  - JSONRPC-DEC-007 sha256:67b17e6ee213dc6ee07374f041a6cbb43b7d0115b333588376fcc2600200c130
+  - JSONRPC-DEC-008 sha256:6a8c8ca88fa6ae039aac7a65b11ae9f4f66a61b33e53f6d68dde62541c3c5695
+  - JSONRPC-DEC-009 sha256:e8b69e6bdd78f017845c2f1a47c2e0f64674395a5532258d07a13a9fccfb848a
+  - JSONRPC-DEC-010 sha256:c02698468fddfee892dad09d2eccd29829b15794379a7e91cd2aad650f7e93c6
+
 - Replace copied repository tooling with the released `go-library-tools`
   contract while preserving JSON-RPC conformance and mutation evidence.
 

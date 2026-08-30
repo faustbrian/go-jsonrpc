@@ -1,0 +1,250 @@
+{
+  "schema_version": 1,
+  "decisions": [
+    {
+      "id": "JSONRPC-DEC-001",
+      "authoritative_sources": [
+        "jsonrpc-2.0-source"
+      ],
+      "executable_evidence": [
+        "TestDispatcherProtocolErrors",
+        "TestDispatcherBatch",
+        "TestDispatcherBatchEdgeCases",
+        "TestSpecificationExamples"
+      ],
+      "fixtures": [
+        "testdata/conformance/jsonrpc-2.0-specification.json"
+      ],
+      "fuzz": [
+        "FuzzDispatcher"
+      ],
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ],
+      "differential_classification": "specification ambiguity",
+      "public_behavior": [
+        "`Dispatcher.Dispatch`, `HTTPHandler.ServeHTTP`"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-002",
+      "authoritative_sources": [
+        "jsonrpc-2.0-source"
+      ],
+      "executable_evidence": [
+        "TestRequestDistinguishesNotificationFromNullID",
+        "TestIDRoundTripAndEquality"
+      ],
+      "fixtures": [
+        "testdata/conformance/jsonrpc-2.0-specification.json"
+      ],
+      "fuzz": [
+        "FuzzIDRoundTrip"
+      ],
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ],
+      "differential_classification": "specification ambiguity",
+      "public_behavior": [
+        "`ID`, `NullID`, `Request.IsNotification`, dispatcher response shaping"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-003",
+      "authoritative_sources": [
+        "jsonrpc-2.0-source",
+        "rfc8259-source"
+      ],
+      "executable_evidence": [
+        "TestIDRoundTripAndEquality",
+        "TestIDNumberCanonicalizationIsBounded",
+        "TestIDCanonicalizationAllocationsDoNotScaleWithExponentDigits",
+        "TestClientMatchesEquivalentNumericID"
+      ],
+      "fixtures": [
+        "testdata/conformance/jsonrpc-2.0-specification.json"
+      ],
+      "fuzz": [
+        "FuzzClientCorrelation"
+      ],
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ],
+      "differential_classification": "deliberate policy difference",
+      "public_behavior": [
+        "`ID.UnmarshalJSON`, `ID.MarshalJSON`, `ID.Equal`, client correlation"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-004",
+      "authoritative_sources": [
+        "jsonrpc-2.0-source"
+      ],
+      "executable_evidence": [
+        "TestDispatcherBatchEdgeCases",
+        "TestSpecificationExamples"
+      ],
+      "fixtures": [
+        "testdata/conformance/jsonrpc-2.0-specification.json"
+      ],
+      "fuzz": [
+        "FuzzDispatcher"
+      ],
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ],
+      "differential_classification": "deliberate policy difference",
+      "public_behavior": [
+        "`Dispatcher.Dispatch`, `HTTPHandler.ServeHTTP`"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-005",
+      "authoritative_sources": [
+        "jsonrpc-2.0-source"
+      ],
+      "executable_evidence": [
+        "TestDispatcherBatch",
+        "TestSpecificationExamples"
+      ],
+      "fixtures": [
+        "testdata/conformance/jsonrpc-2.0-specification.json"
+      ],
+      "fuzz": [
+        "FuzzDispatcher"
+      ],
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ],
+      "differential_classification": "specification ambiguity",
+      "public_behavior": [
+        "`Dispatcher.Dispatch`"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-006",
+      "authoritative_sources": [
+        "jsonrpc-2.0-source"
+      ],
+      "executable_evidence": [
+        "TestDispatcherBatch",
+        "TestClientBatch",
+        "TestClientBatchValidation"
+      ],
+      "fixtures": [
+        "testdata/conformance/jsonrpc-2.0-specification.json"
+      ],
+      "fuzz": [
+        "FuzzClientBatchCorrelation"
+      ],
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ],
+      "differential_classification": "deliberate policy difference",
+      "public_behavior": [
+        "`Dispatcher.Dispatch`, `Client.Batch`"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-007",
+      "authoritative_sources": [
+        "jsonrpc-2.0-source"
+      ],
+      "executable_evidence": [
+        "TestDispatcherProtocolErrors",
+        "TestProtocolRejectsInvalidUTF8",
+        "TestDispatcherClassifiesNestedParameterDuplicatesAsInvalidParams",
+        "FuzzDispatcher"
+      ],
+      "fixtures": [
+        "testdata/conformance/jsonrpc-2.0-specification.json"
+      ],
+      "fuzz": [
+        "FuzzDispatcher"
+      ],
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ],
+      "differential_classification": "specification ambiguity",
+      "public_behavior": [
+        "`Dispatcher.Dispatch`, `DecodeParams`"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-008",
+      "authoritative_sources": [
+        "rfc8259-source",
+        "jsonrpc-2.0-source"
+      ],
+      "executable_evidence": [
+        "TestProtocolDecodersRejectDuplicateMembers",
+        "TestDispatcherClassifiesNestedParameterDuplicatesAsInvalidParams"
+      ],
+      "fixtures": [
+        "testdata/conformance/jsonrpc-2.0-specification.json"
+      ],
+      "fuzz": [
+        "FuzzRequestUnmarshal"
+      ],
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ],
+      "differential_classification": "deliberate policy difference",
+      "public_behavior": [
+        "JSON unmarshaling for `Request`, `Response`, and `Error`; `DecodeParams`; client validation"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-009",
+      "authoritative_sources": [
+        "jsonrpc-2.0-source",
+        "rfc9110-source"
+      ],
+      "executable_evidence": [
+        "TestHTTPHandlerRequestAndNotification",
+        "TestHTTPTransportNoContent",
+        "TestDispatcherBatchEdgeCases"
+      ],
+      "fixtures": [
+        "http_test.go"
+      ],
+      "fuzz": [
+        "FuzzDispatcher"
+      ],
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ],
+      "differential_classification": "specification ambiguity",
+      "public_behavior": [
+        "`HTTPHandler.ServeHTTP`, `HTTPTransport.RoundTrip`"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-010",
+      "authoritative_sources": [
+        "jsonrpc-2.0-source",
+        "rfc9110-source",
+        "rfc6839-source"
+      ],
+      "executable_evidence": [
+        "TestHTTPHandlerTransportErrors",
+        "TestJSONContentTypes",
+        "TestHTTPHandlerRequestAndNotification",
+        "TestHTTPTransportRoundTrip"
+      ],
+      "fixtures": [
+        "http_test.go"
+      ],
+      "fuzz": [
+        "FuzzDispatcher"
+      ],
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ],
+      "differential_classification": "deliberate policy difference",
+      "public_behavior": [
+        "`HTTPHandler`, `HTTPTransport`, `IsJSONContentType`"
+      ]
+    }
+  ]
+}

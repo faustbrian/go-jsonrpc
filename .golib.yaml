@@ -11,10 +11,6 @@ evidence:
 
 mutation:
   root: .verification/mutation
-  imports:
-    - module: .
-      archive: .verification/mutation/bootstrap/root.zip
-      ledger: .verification/mutation/migration-ledger.json
 
 api:
   baselines:
@@ -68,6 +64,13 @@ operations:
         packages: ["."]
         run: '^TestSpecificationExamples$'
         count: 1
+        timeout: 20m
+  - module: .
+    gate: interoperability
+    steps:
+      - type: make
+        makefile: Makefile
+        target: interoperability
         timeout: 20m
   - module: .
     gate: docs
