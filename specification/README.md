@@ -13,21 +13,21 @@ comparisons, hostile-input tests, and fuzz targets provide the remaining
 conformance evidence.
 
 The maintained differential harness pins `creachadair/jrpc2` v1.3.5 in the
-non-releasable `interoperability` module. It exercises explicit null IDs,
-numeric ID equivalence, notification-only HTTP responses, method and media
-policies, and JSON-RPC error status mapping. Run it reproducibly with:
+non-releasable `interoperability` module. It exercises every registered
+decision across envelope validation, IDs, batches, error classification,
+duplicate members, and HTTP binding policy. Run it reproducibly with:
 
 ```bash
 GOWORK=auto go -C interoperability test ./...
 ```
 
-`interoperability/expected.tsv` records the peer version, fixture cases,
+`specification/interoperability.tsv` records the peer version, fixture cases,
 semantic and wire outcomes, and disagreement classification. The summary
 bindings below remain module-owned specification evidence.
 
 ## Decision conformance matrix
 
-| Decision | Normative sources | Executable evidence | Differential evidence |
+| Decision | Authoritative sources | Executable evidence | Differential evidence |
 | --- | --- | --- | --- |
 | JSONRPC-DEC-001 | JSON-RPC 2.0 Request, Notification, and Batch | `TestDispatcherProtocolErrors`, `TestDispatcherBatch`, `TestDispatcherBatchEdgeCases`, `TestSpecificationExamples` | `specification/interoperability.tsv` |
 | JSONRPC-DEC-002 | JSON-RPC 2.0 Request and Notification | `TestRequestDistinguishesNotificationFromNullID`, `TestIDRoundTripAndEquality` | `specification/interoperability.tsv` |

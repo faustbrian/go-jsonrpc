@@ -76,9 +76,18 @@ func observe() (observations []observation, err error) {
 		)
 	}
 
+	const invalidNotification = `{"jsonrpc":"2.0","method":1}`
+	localResponse := exchange(local, http.MethodPost, "application/json", invalidNotification)
+	peerResponse := exchange(peer, http.MethodPost, "application/json", invalidNotification)
+	if !hasError(localResponse, http.StatusOK, -32600, "null") ||
+		!hasError(peerResponse, http.StatusOK, -32700, "null") {
+		return nil, fmt.Errorf("unexpected invalid notification-shaped responses: local=%d/%q peer=%d/%q", localResponse.status, localResponse.body, peerResponse.status, peerResponse.body)
+	}
+	add("JSONRPC-DEC-001", "invalid-notification-shaped", "status=200;error=-32600;id=null", "status=200;error=-32700;id=null")
+
 	const nullRequest = `{"jsonrpc":"2.0","id":null,"method":"echo"}`
-	localResponse := exchange(local, http.MethodPost, "application/json", nullRequest)
-	peerResponse := exchange(peer, http.MethodPost, "application/json", nullRequest)
+	localResponse = exchange(local, http.MethodPost, "application/json", nullRequest)
+	peerResponse = exchange(peer, http.MethodPost, "application/json", nullRequest)
 	if localResponse.status != http.StatusOK || responseID(localResponse.body) != "null" {
 		return nil, fmt.Errorf("unexpected local explicit-null response: status=%d body=%q", localResponse.status, localResponse.body)
 	}
@@ -105,6 +114,66 @@ func observe() (observations []observation, err error) {
 	localNumeric += ";" + largeNumericID + "=preserved"
 	peerNumeric += ";" + largeNumericID + "=preserved"
 	add("JSONRPC-DEC-003", "numeric-id-equivalence", localNumeric, peerNumeric)
+
+	localResponse = exchange(local, http.MethodPost, "application/json", `[]`)
+	peerResponse = exchange(peer, http.MethodPost, "application/json", `[]`)
+	if !hasError(localResponse, http.StatusOK, -32600, "null") ||
+		peerResponse.status != http.StatusNoContent || len(peerResponse.body) != 0 {
+		return nil, fmt.Errorf("unexpected empty-batch responses: local=%d/%q peer=%d/%q", localResponse.status, localResponse.body, peerResponse.status, peerResponse.body)
+	}
+	add("JSONRPC-DEC-004", "empty-batch", "status=200;error=-32600;id=null", "status=204;body=empty")
+
+	const invalidBatchMember = `[{"jsonrpc":"2.0","id":1,"method":"echo"},{"jsonrpc":"2.0","method":1}]`
+	localResponse = exchange(local, http.MethodPost, "application/json", invalidBatchMember)
+	peerResponse = exchange(peer, http.MethodPost, "application/json", invalidBatchMember)
+	if !hasBatchResults(localResponse, []string{"1", "null"}, []int{0, -32600}) ||
+		!hasBatchResults(peerResponse, []string{"null", "1"}, []int{-32700, 0}) {
+		return nil, fmt.Errorf("unexpected invalid-member batch responses: local=%d/%q peer=%d/%q", localResponse.status, localResponse.body, peerResponse.status, peerResponse.body)
+	}
+	add("JSONRPC-DEC-005", "invalid-batch-member", "status=200;ids=1,null;errors=0,-32600", "status=200;ids=null,1;errors=-32700,0")
+
+	const orderedBatch = `[{"jsonrpc":"2.0","id":2,"method":"echo"},{"jsonrpc":"2.0","id":1,"method":"echo"}]`
+	localResponse = exchange(local, http.MethodPost, "application/json", orderedBatch)
+	peerResponse = exchange(peer, http.MethodPost, "application/json", orderedBatch)
+	if !hasBatchResults(localResponse, []string{"2", "1"}, []int{0, 0}) ||
+		!hasBatchResults(peerResponse, []string{"2", "1"}, []int{0, 0}) {
+		return nil, fmt.Errorf("unexpected batch response order: local=%d/%q peer=%d/%q", localResponse.status, localResponse.body, peerResponse.status, peerResponse.body)
+	}
+	add("JSONRPC-DEC-006", "batch-response-order", "status=200;ids=2,1", "status=200;ids=2,1")
+
+	for _, testCase := range []struct {
+		name        string
+		payload     string
+		localCode   int
+		localValue  string
+		peerStatus  int
+		peerCode    int
+		peerValue   string
+		peerNonJSON bool
+	}{
+		{"malformed-json", `{`, -32700, "status=200;error=-32700", 500, 0, "status=500;body=non-json-error", true},
+		{"valid-scalar", `1`, -32600, "status=200;error=-32600", 200, -32700, "status=200;error=-32700", false},
+	} {
+		localResponse = exchange(local, http.MethodPost, "application/json", testCase.payload)
+		peerResponse = exchange(peer, http.MethodPost, "application/json", testCase.payload)
+		peerMatches := hasError(peerResponse, testCase.peerStatus, testCase.peerCode, "null")
+		if testCase.peerNonJSON {
+			peerMatches = peerResponse.status == testCase.peerStatus && !json.Valid(peerResponse.body)
+		}
+		if !hasError(localResponse, http.StatusOK, testCase.localCode, "null") || !peerMatches {
+			return nil, fmt.Errorf("unexpected %s responses: local=%d/%q peer=%d/%q", testCase.name, localResponse.status, localResponse.body, peerResponse.status, peerResponse.body)
+		}
+		add("JSONRPC-DEC-007", testCase.name, testCase.localValue, testCase.peerValue)
+	}
+
+	const duplicateID = `{"jsonrpc":"2.0","id":1,"id":2,"method":"echo"}`
+	localResponse = exchange(local, http.MethodPost, "application/json", duplicateID)
+	peerResponse = exchange(peer, http.MethodPost, "application/json", duplicateID)
+	if !hasError(localResponse, http.StatusOK, -32600, "null") ||
+		peerResponse.status != http.StatusOK || responseID(peerResponse.body) != "2" || !responseSucceeded(peerResponse.body) {
+		return nil, fmt.Errorf("unexpected duplicate-ID responses: local=%d/%q peer=%d/%q", localResponse.status, localResponse.body, peerResponse.status, peerResponse.body)
+	}
+	add("JSONRPC-DEC-008", "duplicate-id-member", "status=200;error=-32600;id=null", "status=200;response-id=2")
 
 	const notification = `{"jsonrpc":"2.0","method":"echo"}`
 	localResponse = exchange(local, http.MethodPost, "application/json", notification)
@@ -233,6 +302,38 @@ func responseErrorCode(body []byte) int {
 		return 0
 	}
 	return response.Error.Code
+}
+
+func hasError(response httpResponse, status, code int, id string) bool {
+	return response.status == status && responseErrorCode(response.body) == code && responseID(response.body) == id
+}
+
+func hasBatchResults(response httpResponse, ids []string, codes []int) bool {
+	if response.status != http.StatusOK || len(ids) != len(codes) {
+		return false
+	}
+	var values []struct {
+		ID    json.RawMessage `json:"id"`
+		Error *struct {
+			Code int `json:"code"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(response.body, &values) != nil || len(values) != len(ids) {
+		return false
+	}
+	for index, value := range values {
+		if string(value.ID) != ids[index] {
+			return false
+		}
+		code := 0
+		if value.Error != nil {
+			code = value.Error.Code
+		}
+		if code != codes[index] {
+			return false
+		}
+	}
+	return true
 }
 
 func moduleVersion(path string) (string, error) {

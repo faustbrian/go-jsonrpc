@@ -17,7 +17,7 @@ func TestObservationsMatchRecordedMatrix(t *testing.T) {
 	if err := write(&actual, observations); err != nil {
 		t.Fatal(err)
 	}
-	expected, err := os.ReadFile("expected.tsv")
+	expected, err := os.ReadFile("../specification/interoperability.tsv")
 	if err != nil {
 		t.Fatal(err)
 	}

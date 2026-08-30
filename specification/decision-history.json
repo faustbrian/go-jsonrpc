@@ -1,15 +1,79 @@
 {
   "schema_version": 1,
   "entries": [
-    {"id":"JSONRPC-DEC-001","digests":["56d72c967858ae0ed974a7175e3974e21645a8ee01cbfdcf402c3f1748412bed"]},
-    {"id":"JSONRPC-DEC-002","digests":["3d33b96223c26a627dbd4dc4b7b3d0b1a4655d3ad50a0845f8fd02efb9a32240","e2898b8880a5b946f6378b98acd691fc4b67a8d7c1adb543e67e61a73a17bf84"]},
-    {"id":"JSONRPC-DEC-003","digests":["f82765765c82bea503c03d022d3acc5750ea12c040aab143c5bb45afc95b321e","f709c7085240ac271f821bc8be8f8a5cff3cdcd6427ef543a5f2ab5e103ac5bf"]},
-    {"id":"JSONRPC-DEC-004","digests":["1be90684db04140fabb420f35597ab36f8b5d81f229678d82d3b0a3d7777b4df"]},
-    {"id":"JSONRPC-DEC-005","digests":["b2bcee89e0d0dc65c2cdbf55fc18b1268a716479ae2ad1a0da3a41ddab100c61"]},
-    {"id":"JSONRPC-DEC-006","digests":["e3134a8d0891f445195ffa91638c46d126303b924edc4d56626f4a64e6fff6db"]},
-    {"id":"JSONRPC-DEC-007","digests":["67b17e6ee213dc6ee07374f041a6cbb43b7d0115b333588376fcc2600200c130"]},
-    {"id":"JSONRPC-DEC-008","digests":["6a8c8ca88fa6ae039aac7a65b11ae9f4f66a61b33e53f6d68dde62541c3c5695"]},
-    {"id":"JSONRPC-DEC-009","digests":["f0c450861ace4ad58fe0fe4aa4068a74f660238eb0c718ae5628620a143b32dd","e8b69e6bdd78f017845c2f1a47c2e0f64674395a5532258d07a13a9fccfb848a"]},
-    {"id":"JSONRPC-DEC-010","digests":["8143d864cdb5e424f4cb4b85f120d75e218cf5ec9baa3949719605f5239967a3","c02698468fddfee892dad09d2eccd29829b15794379a7e91cd2aad650f7e93c6"]}
+    {
+      "id": "JSONRPC-DEC-001",
+      "digests": [
+        "56d72c967858ae0ed974a7175e3974e21645a8ee01cbfdcf402c3f1748412bed",
+        "e7c97164879dd80e913343dc0591270476c667d38b4c9840a8c87b3344cd7e7f"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-002",
+      "digests": [
+        "3d33b96223c26a627dbd4dc4b7b3d0b1a4655d3ad50a0845f8fd02efb9a32240",
+        "e2898b8880a5b946f6378b98acd691fc4b67a8d7c1adb543e67e61a73a17bf84",
+        "884338cefdc0b14295f2f8bc824f8f1b4a7232202e009b6151e72995aa90985e"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-003",
+      "digests": [
+        "f82765765c82bea503c03d022d3acc5750ea12c040aab143c5bb45afc95b321e",
+        "f709c7085240ac271f821bc8be8f8a5cff3cdcd6427ef543a5f2ab5e103ac5bf",
+        "cd43cb366bfec47a9df2e0809353c0b1f473abba2f48d8178b19977c6ea044d2"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-004",
+      "digests": [
+        "1be90684db04140fabb420f35597ab36f8b5d81f229678d82d3b0a3d7777b4df",
+        "b5e05c5f685fec356b12c5c3283d60e81af847df40a58a5c3f682d67636757ec"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-005",
+      "digests": [
+        "b2bcee89e0d0dc65c2cdbf55fc18b1268a716479ae2ad1a0da3a41ddab100c61",
+        "5a54e26f2808a25744877eedd498a83b143b8098a7ef337c58143df3cf0677f5"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-006",
+      "digests": [
+        "e3134a8d0891f445195ffa91638c46d126303b924edc4d56626f4a64e6fff6db",
+        "c118a37adfbf495cacbc9a8ca16ce9676ae63c69093dab0d2d964f9142156db4"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-007",
+      "digests": [
+        "67b17e6ee213dc6ee07374f041a6cbb43b7d0115b333588376fcc2600200c130",
+        "8cf601cd0af0e3a175f80fab9719d2e6dd97647773fa4603c55689f8153344fe"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-008",
+      "digests": [
+        "6a8c8ca88fa6ae039aac7a65b11ae9f4f66a61b33e53f6d68dde62541c3c5695",
+        "3ea835ba8ade0e5fa30a75d0f879018a54382113686f65982d624221f3850821"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-009",
+      "digests": [
+        "f0c450861ace4ad58fe0fe4aa4068a74f660238eb0c718ae5628620a143b32dd",
+        "e8b69e6bdd78f017845c2f1a47c2e0f64674395a5532258d07a13a9fccfb848a",
+        "70e0d1ae7a3d2d9a8f1bf3c877eef01faf64642ae203019cd237cd6eafb1152a"
+      ]
+    },
+    {
+      "id": "JSONRPC-DEC-010",
+      "digests": [
+        "8143d864cdb5e424f4cb4b85f120d75e218cf5ec9baa3949719605f5239967a3",
+        "c02698468fddfee892dad09d2eccd29829b15794379a7e91cd2aad650f7e93c6",
+        "9ed4d9b0f4bb1d32428b82fdf0c57de959fe78881884da703a7133d2b8f11cb2"
+      ]
+    }
   ]
 }

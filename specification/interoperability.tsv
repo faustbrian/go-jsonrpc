@@ -1,11 +1,31 @@
-decision_id	peer_or_corpus	observed_behavior	classification	executable_evidence
-JSONRPC-DEC-001	creachadair/jrpc2	Invalid id-less batch members produce validation errors.	specification ambiguity	TestDispatcherBatchEdgeCases
-JSONRPC-DEC-002	creachadair/jrpc2 v1.3.5 differential harness	This package treats explicit null as a request and replies with id null; the peer treats it as a notification and returns HTTP 204.	deliberate policy difference	TestObservationsMatchRecordedMatrix
-JSONRPC-DEC-003	creachadair/jrpc2 v1.3.5 differential harness	Both preserve 9007199254740993 without binary floating-point loss; this package correlates 1, 1.0, and 1e0 by exact numeric value while the peer exposes them as distinct lexical IDs.	deliberate policy difference	TestObservationsMatchRecordedMatrix
-JSONRPC-DEC-004	creachadair/jrpc2	The peer returns parse error while this package returns the normative Invalid Request object.	deliberate policy difference	TestSpecificationExamples
-JSONRPC-DEC-005	JSON-RPC 2.0 mixed-batch example	Every invalid member contributes an Invalid Request response.	specification ambiguity	TestSpecificationExamples
-JSONRPC-DEC-006	creachadair/jrpc2	Both implementations currently preserve response order without making it portable.	deliberate policy difference	TestClientBatch
-JSONRPC-DEC-007	JSON-RPC 2.0 error examples	Malformed JSON and invalid envelopes retain distinct error codes.	specification ambiguity	TestDispatcherProtocolErrors
-JSONRPC-DEC-008	RFC 8259 interoperability guidance	Ambiguous duplicate members are rejected instead of selecting a value.	deliberate policy difference	TestProtocolDecodersRejectDuplicateMembers
-JSONRPC-DEC-009	creachadair/jrpc2 v1.3.5 differential harness	Both implementations return HTTP 204 with an empty body for notification-only requests.	specification ambiguity	TestObservationsMatchRecordedMatrix
-JSONRPC-DEC-010	creachadair/jrpc2 v1.3.5 differential harness	Both require POST and use HTTP 200 for JSON-RPC errors; this package additionally accepts application/json-rpc and application/*+json while the peer returns HTTP 415.	deliberate policy difference	TestObservationsMatchRecordedMatrix
+decision_id	case	implementation	version	outcome	classification
+JSONRPC-DEC-001	invalid-notification-shaped	golib-jsonrpc	workspace	status=200;error=-32600;id=null	deliberate policy difference
+JSONRPC-DEC-001	invalid-notification-shaped	creachadair/jrpc2	v1.3.5	status=200;error=-32700;id=null	deliberate policy difference
+JSONRPC-DEC-002	explicit-null-id	golib-jsonrpc	workspace	request;status=200;response-id=null	deliberate policy difference
+JSONRPC-DEC-002	explicit-null-id	creachadair/jrpc2	v1.3.5	notification;status=204;body=empty	deliberate policy difference
+JSONRPC-DEC-003	numeric-id-equivalence	golib-jsonrpc	workspace	1=1.0=1e0;9007199254740993=preserved	deliberate policy difference
+JSONRPC-DEC-003	numeric-id-equivalence	creachadair/jrpc2	v1.3.5	1!=1.0!=1e0;9007199254740993=preserved	deliberate policy difference
+JSONRPC-DEC-004	empty-batch	golib-jsonrpc	workspace	status=200;error=-32600;id=null	deliberate policy difference
+JSONRPC-DEC-004	empty-batch	creachadair/jrpc2	v1.3.5	status=204;body=empty	deliberate policy difference
+JSONRPC-DEC-005	invalid-batch-member	golib-jsonrpc	workspace	status=200;ids=1,null;errors=0,-32600	deliberate policy difference
+JSONRPC-DEC-005	invalid-batch-member	creachadair/jrpc2	v1.3.5	status=200;ids=null,1;errors=-32700,0	deliberate policy difference
+JSONRPC-DEC-006	batch-response-order	golib-jsonrpc	workspace	status=200;ids=2,1	agreement
+JSONRPC-DEC-006	batch-response-order	creachadair/jrpc2	v1.3.5	status=200;ids=2,1	agreement
+JSONRPC-DEC-007	malformed-json	golib-jsonrpc	workspace	status=200;error=-32700	deliberate policy difference
+JSONRPC-DEC-007	malformed-json	creachadair/jrpc2	v1.3.5	status=500;body=non-json-error	deliberate policy difference
+JSONRPC-DEC-007	valid-scalar	golib-jsonrpc	workspace	status=200;error=-32600	deliberate policy difference
+JSONRPC-DEC-007	valid-scalar	creachadair/jrpc2	v1.3.5	status=200;error=-32700	deliberate policy difference
+JSONRPC-DEC-008	duplicate-id-member	golib-jsonrpc	workspace	status=200;error=-32600;id=null	deliberate policy difference
+JSONRPC-DEC-008	duplicate-id-member	creachadair/jrpc2	v1.3.5	status=200;response-id=2	deliberate policy difference
+JSONRPC-DEC-009	notification-only-http	golib-jsonrpc	workspace	status=204;body=empty	agreement
+JSONRPC-DEC-009	notification-only-http	creachadair/jrpc2	v1.3.5	status=204;body=empty	agreement
+JSONRPC-DEC-010	post-application-json	golib-jsonrpc	workspace	status=200;response=success	agreement
+JSONRPC-DEC-010	post-application-json	creachadair/jrpc2	v1.3.5	status=200;response=success	agreement
+JSONRPC-DEC-010	get-application-json	golib-jsonrpc	workspace	status=405	agreement
+JSONRPC-DEC-010	get-application-json	creachadair/jrpc2	v1.3.5	status=405	agreement
+JSONRPC-DEC-010	post-application-json-rpc	golib-jsonrpc	workspace	status=200;response=success	deliberate policy difference
+JSONRPC-DEC-010	post-application-json-rpc	creachadair/jrpc2	v1.3.5	status=415	deliberate policy difference
+JSONRPC-DEC-010	post-vendor-json	golib-jsonrpc	workspace	status=200;response=success	deliberate policy difference
+JSONRPC-DEC-010	post-vendor-json	creachadair/jrpc2	v1.3.5	status=415	deliberate policy difference
+JSONRPC-DEC-010	protocol-error-http-status	golib-jsonrpc	workspace	status=200;error=-32601	agreement
+JSONRPC-DEC-010	protocol-error-http-status	creachadair/jrpc2	v1.3.5	status=200;error=-32601	agreement

@@ -25,7 +25,7 @@
       "interpretations": [
         "Suppress every response whenever `id` is absent; or classify notification status only after the object is a valid Request. The specification's mixed-batch example demonstrates the latter for an invalid object."
       ],
-      "peer_behavior": "[`creachadair/jrpc2`](https://github.com/creachadair/jrpc2#batch-requests-and-error-reporting) also reports validation errors for id-less invalid batch members and documents the notification conflict.",
+      "peer_behavior": "The pinned creachadair/jrpc2 v1.3.5 harness returns Parse Error -32700 for an invalid id-less object with a non-string method, while this package returns Invalid Request -32600; both use id null.",
       "selected_behavior": "Validate the Request Object first. A valid request without `id` is a notification and produces no response. An invalid object without `id` produces `Invalid Request` with `id: null`, including as a batch member. This is a normative interpretation of Request-before-Notification semantics.",
       "rationale": "Validate the Request Object first. A valid request without `id` is a notification and produces no response. An invalid object without `id` produces `Invalid Request` with `id: null`, including as a batch member. This is a normative interpretation of Request-before-Notification semantics.",
       "security_consequences": "Malformed input cannot silently bypass protocol diagnostics. Validation remains bounded by dispatcher payload, batch, member, and nesting limits before handler execution.",
@@ -44,9 +44,6 @@
       "fuzz_evidence": [
         "FuzzDispatcher"
       ],
-      "interoperability_evidence": [
-        "specification/interoperability.tsv"
-      ],
       "public_apis": [
         "`Dispatcher.Dispatch`, `HTTPHandler.ServeHTTP`"
       ],
@@ -54,7 +51,10 @@
         "docs/specification-decisions.md"
       ],
       "upstream_status": "No normative erratum is known; the specification's batch example is retained as interoperability evidence.",
-      "reconsider_when": "A JSON-RPC erratum explicitly defines whether an invalid id-less object is a Notification."
+      "reconsider_when": "A JSON-RPC erratum explicitly defines whether an invalid id-less object is a Notification.",
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ]
     },
     {
       "id": "JSONRPC-DEC-002",
@@ -89,9 +89,6 @@
       "fuzz_evidence": [
         "FuzzIDRoundTrip"
       ],
-      "interoperability_evidence": [
-        "specification/interoperability.tsv"
-      ],
       "public_apis": [
         "`ID`, `NullID`, `Request.IsNotification`, dispatcher response shaping"
       ],
@@ -99,7 +96,10 @@
         "docs/specification-decisions.md"
       ],
       "upstream_status": "No separate erratum is known.",
-      "reconsider_when": "The base specification removes null IDs or defines them as notifications."
+      "reconsider_when": "The base specification removes null IDs or defines them as notifications.",
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ]
     },
     {
       "id": "JSONRPC-DEC-003",
@@ -136,9 +136,6 @@
       "fuzz_evidence": [
         "FuzzClientCorrelation"
       ],
-      "interoperability_evidence": [
-        "specification/interoperability.tsv"
-      ],
       "public_apis": [
         "`ID.UnmarshalJSON`, `ID.MarshalJSON`, `ID.Equal`, client correlation"
       ],
@@ -146,7 +143,10 @@
         "docs/specification-decisions.md"
       ],
       "upstream_status": "No precision profile is defined by JSON-RPC 2.0.",
-      "reconsider_when": "A successor specification defines lexical ID equality or numeric bounds."
+      "reconsider_when": "A successor specification defines lexical ID equality or numeric bounds.",
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ]
     },
     {
       "id": "JSONRPC-DEC-004",
@@ -164,7 +164,7 @@
       "interpretations": [
         "Return one `Invalid Request` object; return an array containing that object; or reject it at the transport layer."
       ],
-      "peer_behavior": "`creachadair/jrpc2` documents a single `-32700` response for an empty batch, which differs from the official JSON-RPC example and this package's `-32600` decision.",
+      "peer_behavior": "The pinned creachadair/jrpc2 v1.3.5 HTTP bridge returns 204 with no body for an empty batch, while this package returns one Invalid Request -32600 response with id null.",
       "selected_behavior": "Return one `Invalid Request` Response Object with `id: null`, not an Array.",
       "rationale": "Return one `Invalid Request` Response Object with `id: null`, not an Array.",
       "security_consequences": "Empty input cannot trigger handlers or unbounded batch machinery; it incurs one bounded protocol error.",
@@ -181,9 +181,6 @@
       "fuzz_evidence": [
         "FuzzDispatcher"
       ],
-      "interoperability_evidence": [
-        "specification/interoperability.tsv"
-      ],
       "public_apis": [
         "`Dispatcher.Dispatch`, `HTTPHandler.ServeHTTP`"
       ],
@@ -191,7 +188,10 @@
         "docs/specification-decisions.md"
       ],
       "upstream_status": "The behavior is explicitly shown in the specification examples.",
-      "reconsider_when": "A successor specification changes the required empty-batch response shape."
+      "reconsider_when": "A successor specification changes the required empty-batch response shape.",
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ]
     },
     {
       "id": "JSONRPC-DEC-005",
@@ -209,7 +209,7 @@
       "interpretations": [
         "Omit invalid members because they are not Requests; abort the whole batch; or include one `Invalid Request` response for each invalid member."
       ],
-      "peer_behavior": "`creachadair/jrpc2` likewise emits null-ID errors for invalid id-less batch members and preserves their positions.",
+      "peer_behavior": "The pinned creachadair/jrpc2 v1.3.5 harness returns both the valid result and an error for an invalid member, but emits the -32700 error before the result; this package preserves input order and uses -32600 for the invalid member.",
       "selected_behavior": "Process each nonempty batch member independently. Every invalid member contributes an `Invalid Request` response with `id: null`; valid notifications contribute no response.",
       "rationale": "Process each nonempty batch member independently. Every invalid member contributes an `Invalid Request` response with `id: null`; valid notifications contribute no response.",
       "security_consequences": "Each member is independently bounded and malformed members cannot suppress validation of siblings. Batch limits prevent error amplification.",
@@ -226,9 +226,6 @@
       "fuzz_evidence": [
         "FuzzDispatcher"
       ],
-      "interoperability_evidence": [
-        "specification/interoperability.tsv"
-      ],
       "public_apis": [
         "`Dispatcher.Dispatch`"
       ],
@@ -236,7 +233,10 @@
         "docs/specification-decisions.md"
       ],
       "upstream_status": "The mixed-batch specification example is the governing interoperability fixture.",
-      "reconsider_when": "An erratum defines whole-batch failure or different invalid-member semantics."
+      "reconsider_when": "An erratum defines whole-batch failure or different invalid-member semantics.",
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ]
     },
     {
       "id": "JSONRPC-DEC-006",
@@ -254,7 +254,7 @@
       "interpretations": [
         "Concurrent unordered execution; sequential input-order execution; or configurable scheduling."
       ],
-      "peer_behavior": "`creachadair/jrpc2` preserves response order as stable behavior but explicitly warns clients not to depend on it.",
+      "peer_behavior": "The pinned creachadair/jrpc2 v1.3.5 harness and this package both emit responses in input order for the observed two-call batch. The specification still permits any response order, so clients cannot rely on this agreement.",
       "selected_behavior": "The dispatcher currently executes sequentially and emits responses in input order after omitting notifications. This is an implementation detail, not a public guarantee. Clients always correlate by ID and accept any response order.",
       "rationale": "The dispatcher currently executes sequentially and emits responses in input order after omitting notifications. This is an implementation detail, not a public guarantee. Clients always correlate by ID and accept any response order.",
       "security_consequences": "Sequential dispatch creates no package-owned batch goroutines and preserves configured batch resource bounds; handlers still own their side effects and cancellation behavior.",
@@ -272,9 +272,6 @@
       "fuzz_evidence": [
         "FuzzClientBatchCorrelation"
       ],
-      "interoperability_evidence": [
-        "specification/interoperability.tsv"
-      ],
       "public_apis": [
         "`Dispatcher.Dispatch`, `Client.Batch`"
       ],
@@ -282,7 +279,10 @@
         "docs/specification-decisions.md"
       ],
       "upstream_status": "The base specification explicitly permits any processing and response order.",
-      "reconsider_when": "Parallel dispatch is introduced or a successor specification constrains ordering."
+      "reconsider_when": "Parallel dispatch is introduced or a successor specification constrains ordering.",
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ]
     },
     {
       "id": "JSONRPC-DEC-007",
@@ -300,7 +300,7 @@
       "interpretations": [
         "Map every decoding failure to Parse Error; or reserve Parse Error for malformed JSON and map envelope/type violations to Invalid Request."
       ],
-      "peer_behavior": "`creachadair/jrpc2` describes malformed whole-batch JSON as `-32700`; no broader cross-peer classification matrix is pinned yet.",
+      "peer_behavior": "The pinned creachadair/jrpc2 v1.3.5 HTTP bridge returns a non-JSON HTTP 500 for malformed JSON and Parse Error -32700 for a valid scalar. This package returns JSON-RPC Parse Error -32700 and Invalid Request -32600 respectively, both over HTTP 200.",
       "selected_behavior": "Empty, syntactically malformed, invalid-UTF-8, or trailing JSON is `Parse Error`. A syntactically valid scalar, array member, or object with an invalid JSON-RPC envelope is `Invalid Request`. Parameter decoding after a valid envelope is `Invalid params`.",
       "rationale": "Empty, syntactically malformed, invalid-UTF-8, or trailing JSON is `Parse Error`. A syntactically valid scalar, array member, or object with an invalid JSON-RPC envelope is `Invalid Request`. Parameter decoding after a valid envelope is `Invalid params`.",
       "security_consequences": "Invalid UTF-8 and malformed syntax are rejected before dispatch, preventing replacement-character and parser differential attacks under bounded scanning.",
@@ -319,9 +319,6 @@
       "fuzz_evidence": [
         "FuzzDispatcher"
       ],
-      "interoperability_evidence": [
-        "specification/interoperability.tsv"
-      ],
       "public_apis": [
         "`Dispatcher.Dispatch`, `DecodeParams`"
       ],
@@ -329,7 +326,10 @@
         "docs/specification-decisions.md"
       ],
       "upstream_status": "No exhaustive error-classification table is published beyond the standard error definitions and examples.",
-      "reconsider_when": "An erratum classifies an input currently covered by this policy differently."
+      "reconsider_when": "An erratum classifies an input currently covered by this policy differently.",
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ]
     },
     {
       "id": "JSONRPC-DEC-008",
@@ -347,7 +347,7 @@
       "interpretations": [
         "First value wins, last value wins, collect duplicates, or reject the ambiguous object."
       ],
-      "peer_behavior": "RFC 8259 records first-value, last-value, all-value, and failure behavior across parsers; no JSON-RPC-specific peer fixture is pinned yet.",
+      "peer_behavior": "The pinned creachadair/jrpc2 v1.3.5 harness accepts a request with duplicate id members and uses the last value, while this package rejects the ambiguous envelope with Invalid Request -32600 and id null.",
       "selected_behavior": "Reject duplicate members in protocol envelopes and named parameter objects. A duplicate request-envelope member produces `Invalid Request`; nested duplicate named parameters produce `Invalid params`; malformed responses are rejected by the client.",
       "rationale": "Reject duplicate members in protocol envelopes and named parameter objects. A duplicate request-envelope member produces `Invalid Request`; nested duplicate named parameters produce `Invalid params`; malformed responses are rejected by the client.",
       "security_consequences": "Rejecting duplicates prevents member-smuggling and parser differential attacks. Detection is bounded by existing object member and nesting limits.",
@@ -364,9 +364,6 @@
       "fuzz_evidence": [
         "FuzzRequestUnmarshal"
       ],
-      "interoperability_evidence": [
-        "specification/interoperability.tsv"
-      ],
       "public_apis": [
         "JSON unmarshaling for `Request`, `Response`, and `Error`; `DecodeParams`; client validation"
       ],
@@ -374,7 +371,10 @@
         "docs/specification-decisions.md"
       ],
       "upstream_status": "RFC 8259 records the interoperability risk; JSON-RPC has no duplicate-member rule.",
-      "reconsider_when": "A JSON-RPC revision defines duplicate-member behavior or an interoperability profile requires another deterministic policy."
+      "reconsider_when": "A JSON-RPC revision defines duplicate-member behavior or an interoperability profile requires another deterministic policy.",
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ]
     },
     {
       "id": "JSONRPC-DEC-009",
@@ -410,9 +410,6 @@
       "fuzz_evidence": [
         "FuzzDispatcher"
       ],
-      "interoperability_evidence": [
-        "specification/interoperability.tsv"
-      ],
       "public_apis": [
         "`HTTPHandler.ServeHTTP`, `HTTPTransport.RoundTrip`"
       ],
@@ -420,7 +417,10 @@
         "docs/specification-decisions.md"
       ],
       "upstream_status": "JSON-RPC 2.0 defines no official HTTP binding.",
-      "reconsider_when": "An adopted JSON-RPC HTTP binding standardizes a different notification response."
+      "reconsider_when": "An adopted JSON-RPC HTTP binding standardizes a different notification response.",
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ]
     },
     {
       "id": "JSONRPC-DEC-010",
@@ -457,9 +457,6 @@
       "fuzz_evidence": [
         "FuzzDispatcher"
       ],
-      "interoperability_evidence": [
-        "specification/interoperability.tsv"
-      ],
       "public_apis": [
         "`HTTPHandler`, `HTTPTransport`, `IsJSONContentType`"
       ],
@@ -467,7 +464,10 @@
         "docs/specification-decisions.md"
       ],
       "upstream_status": "JSON-RPC 2.0 publishes no normative HTTP binding.",
-      "reconsider_when": "The project adopts a normative HTTP binding or a security review narrows accepted structured-suffix media types."
+      "reconsider_when": "The project adopts a normative HTTP binding or a security review narrows accepted structured-suffix media types.",
+      "differential_evidence": [
+        "specification/interoperability.tsv"
+      ]
     }
   ]
 }

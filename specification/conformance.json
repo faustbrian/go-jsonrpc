@@ -21,7 +21,7 @@
       "differential_evidence": [
         "specification/interoperability.tsv"
       ],
-      "differential_classification": "specification ambiguity",
+      "differential_classification": "deliberate policy difference",
       "public_behavior": [
         "`Dispatcher.Dispatch`, `HTTPHandler.ServeHTTP`"
       ]
@@ -44,7 +44,7 @@
       "differential_evidence": [
         "specification/interoperability.tsv"
       ],
-      "differential_classification": "specification ambiguity",
+      "differential_classification": "deliberate policy difference",
       "public_behavior": [
         "`ID`, `NullID`, `Request.IsNotification`, dispatcher response shaping"
       ]
@@ -116,7 +116,7 @@
       "differential_evidence": [
         "specification/interoperability.tsv"
       ],
-      "differential_classification": "specification ambiguity",
+      "differential_classification": "deliberate policy difference",
       "public_behavior": [
         "`Dispatcher.Dispatch`"
       ]
@@ -140,7 +140,7 @@
       "differential_evidence": [
         "specification/interoperability.tsv"
       ],
-      "differential_classification": "deliberate policy difference",
+      "differential_classification": "maintained peer agreement",
       "public_behavior": [
         "`Dispatcher.Dispatch`, `Client.Batch`"
       ]
@@ -165,7 +165,7 @@
       "differential_evidence": [
         "specification/interoperability.tsv"
       ],
-      "differential_classification": "specification ambiguity",
+      "differential_classification": "deliberate policy difference",
       "public_behavior": [
         "`Dispatcher.Dispatch`, `DecodeParams`"
       ]
@@ -214,7 +214,7 @@
       "differential_evidence": [
         "specification/interoperability.tsv"
       ],
-      "differential_classification": "specification ambiguity",
+      "differential_classification": "maintained peer agreement",
       "public_behavior": [
         "`HTTPHandler.ServeHTTP`, `HTTPTransport.RoundTrip`"
       ]
