@@ -41,8 +41,9 @@ All notable changes to this project are documented here. The format is based on
   - JSONRPC-DEC-009 sha256:e8b69e6bdd78f017845c2f1a47c2e0f64674395a5532258d07a13a9fccfb848a
   - JSONRPC-DEC-010 sha256:c02698468fddfee892dad09d2eccd29829b15794379a7e91cd2aad650f7e93c6
 
-- Replace copied repository tooling with the released `go-library-tools`
-  contract while preserving JSON-RPC conformance and mutation evidence.
+- Use the released `go-library-tools` v1.2.0 CLI and immutable merged
+  workflow at `1f9629e5f27418600460b55a50a5b2fc81697fab` while preserving
+  JSON-RPC conformance and mutation evidence.
 
 - Clarify how shared safety-policy updates are coordinated across standalone
   repositories.
