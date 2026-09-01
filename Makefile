@@ -1,7 +1,7 @@
 SHELL := /usr/bin/env bash
 GOLIB ?= golib
 
-.PHONY: check ci inventory repository-check
+.PHONY: check ci interoperability inventory repository-check
 
 check:
 	$(GOLIB) check --all
@@ -9,6 +9,9 @@ check:
 ci:
 	$(GOLIB) repository check
 	$(GOLIB) check --all
+
+interoperability:
+	GOWORK=auto go -C interoperability test ./...
 
 inventory repository-check:
 	$(GOLIB) repository check

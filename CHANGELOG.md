@@ -8,8 +8,42 @@ All notable changes to this project are documented here. The format is based on
 
 ### Documentation
 
-- Replace copied repository tooling with the released `go-library-tools`
-  contract while preserving JSON-RPC conformance and mutation evidence.
+- Make every registered JSON-RPC decision reproducible against the pinned
+  maintained peer and separate maintained-peer differential evidence from
+  official-fixture interoperability evidence.
+
+  - JSONRPC-DEC-001 sha256:e7c97164879dd80e913343dc0591270476c667d38b4c9840a8c87b3344cd7e7f
+  - JSONRPC-DEC-002 sha256:884338cefdc0b14295f2f8bc824f8f1b4a7232202e009b6151e72995aa90985e
+  - JSONRPC-DEC-003 sha256:cd43cb366bfec47a9df2e0809353c0b1f473abba2f48d8178b19977c6ea044d2
+  - JSONRPC-DEC-004 sha256:b5e05c5f685fec356b12c5c3283d60e81af847df40a58a5c3f682d67636757ec
+  - JSONRPC-DEC-005 sha256:5a54e26f2808a25744877eedd498a83b143b8098a7ef337c58143df3cf0677f5
+  - JSONRPC-DEC-006 sha256:c118a37adfbf495cacbc9a8ca16ce9676ae63c69093dab0d2d964f9142156db4
+  - JSONRPC-DEC-007 sha256:8cf601cd0af0e3a175f80fab9719d2e6dd97647773fa4603c55689f8153344fe
+  - JSONRPC-DEC-008 sha256:3ea835ba8ade0e5fa30a75d0f879018a54382113686f65982d624221f3850821
+  - JSONRPC-DEC-009 sha256:70e0d1ae7a3d2d9a8f1bf3c877eef01faf64642ae203019cd237cd6eafb1152a
+  - JSONRPC-DEC-010 sha256:9ed4d9b0f4bb1d32428b82fdf0c57de959fe78881884da703a7133d2b8f11cb2
+
+- Make the [specification decision register](docs/specification-decisions.md)
+  machine-auditable with exact source and errata monitoring, attributable
+  conformance evidence, and classified interoperability results. Pin a
+  reproducible `creachadair/jrpc2` v1.3.5 differential harness for null IDs,
+  numeric ID equivalence, and HTTP binding decisions without adding the peer
+  dependency to the public module.
+
+  - JSONRPC-DEC-001 sha256:56d72c967858ae0ed974a7175e3974e21645a8ee01cbfdcf402c3f1748412bed
+  - JSONRPC-DEC-002 sha256:e2898b8880a5b946f6378b98acd691fc4b67a8d7c1adb543e67e61a73a17bf84
+  - JSONRPC-DEC-003 sha256:f709c7085240ac271f821bc8be8f8a5cff3cdcd6427ef543a5f2ab5e103ac5bf
+  - JSONRPC-DEC-004 sha256:1be90684db04140fabb420f35597ab36f8b5d81f229678d82d3b0a3d7777b4df
+  - JSONRPC-DEC-005 sha256:b2bcee89e0d0dc65c2cdbf55fc18b1268a716479ae2ad1a0da3a41ddab100c61
+  - JSONRPC-DEC-006 sha256:e3134a8d0891f445195ffa91638c46d126303b924edc4d56626f4a64e6fff6db
+  - JSONRPC-DEC-007 sha256:67b17e6ee213dc6ee07374f041a6cbb43b7d0115b333588376fcc2600200c130
+  - JSONRPC-DEC-008 sha256:6a8c8ca88fa6ae039aac7a65b11ae9f4f66a61b33e53f6d68dde62541c3c5695
+  - JSONRPC-DEC-009 sha256:e8b69e6bdd78f017845c2f1a47c2e0f64674395a5532258d07a13a9fccfb848a
+  - JSONRPC-DEC-010 sha256:c02698468fddfee892dad09d2eccd29829b15794379a7e91cd2aad650f7e93c6
+
+- Use the released `go-library-tools` v1.2.0 CLI and immutable merged
+  workflow at `1f9629e5f27418600460b55a50a5b2fc81697fab` while preserving
+  JSON-RPC conformance and mutation evidence.
 
 - Clarify how shared safety-policy updates are coordinated across standalone
   repositories.

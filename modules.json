@@ -102,7 +102,9 @@
       "required_services": [],
       "build_tags": [],
       "test_tags": [],
-      "interoperability_tools": [],
+      "interoperability_tools": [
+        "creachadair/jrpc2 v1.3.5"
+      ],
       "specifications": [
         "JSON-RPC 2.0",
         "RFC 8259 JSON",
@@ -111,7 +113,8 @@
       ],
       "conformance_corpora": [
         "Pinned JSON-RPC 2.0 official example corpus",
-        "Specification decision, protocol, HTTP binding, hostile-input, and fuzz evidence"
+        "Specification decision, protocol, HTTP binding, hostile-input, and fuzz evidence",
+        "Pinned creachadair/jrpc2 v1.3.5 differential fixtures"
       ],
       "provenance": [
         "specification/manifest.tsv"
@@ -128,6 +131,61 @@
         "fuzz": true,
         "lint": true,
         "mutation": true,
+        "race": true,
+        "security": true,
+        "tests": true
+      }
+    },
+    {
+      "directory": "interoperability",
+      "module_path": "github.com/faustbrian/go-jsonrpc/interoperability",
+      "go_version": "1.26.6",
+      "packages": [
+        {
+          "module_directory": "interoperability",
+          "directory": ".",
+          "name": "main",
+          "import_path": "github.com/faustbrian/go-jsonrpc/interoperability",
+          "kind": "harness",
+          "production": false,
+          "executable": true,
+          "coverage_required": false,
+          "build_required": true,
+          "build_tags": []
+        }
+      ],
+      "purpose": "This non-releasable differential harness compares the JSON-RPC decision contract with pinned creachadair/jrpc2 v1.3.5 behavior while keeping the peer dependency outside the public module.",
+      "lifecycle": "internal",
+      "kind": "interoperability harness",
+      "releasable": false,
+      "version": "unreleased",
+      "tag_prefix": "interoperability/v",
+      "owned_dependencies": [
+        "github.com/faustbrian/go-jsonrpc"
+      ],
+      "reverse_owned_dependencies": [],
+      "external_runtime_dependencies": [],
+      "required_services": [],
+      "build_tags": [],
+      "test_tags": [],
+      "interoperability_tools": [],
+      "specifications": [],
+      "conformance_corpora": [
+        "Pinned explicit-null, numeric-ID, notification, and HTTP binding differential fixtures"
+      ],
+      "provenance": [],
+      "goal_files": [],
+      "goal_status": "not-applicable",
+      "goal_evidence": [],
+      "gates": {
+        "api_compatibility": false,
+        "benchmarks": false,
+        "conformance": false,
+        "coverage": false,
+        "documentation": false,
+        "fuzz": false,
+        "lint": true,
+        "mutation": false,
         "race": true,
         "security": true,
         "tests": true

@@ -1,6 +1,6 @@
 schema_version: 1
-tool_version: v1.0.14
-tool_checksums_sha256: 88341d2f2904925b22ec8de084fec68c5229669f1119f066ed5fccd76aee2f82
+tool_version: v1.2.0
+tool_checksums_sha256: 7de6de3a14184eced8c0114bf802cb24a808f3e1592d358f6f6f3d02552d0e27
 
 manifest:
   modules: modules.json
@@ -11,10 +11,6 @@ evidence:
 
 mutation:
   root: .verification/mutation
-  imports:
-    - module: .
-      archive: .verification/mutation/bootstrap/root.zip
-      ledger: .verification/mutation/migration-ledger.json
 
 api:
   baselines:
@@ -68,6 +64,13 @@ operations:
         packages: ["."]
         run: '^TestSpecificationExamples$'
         count: 1
+        timeout: 20m
+  - module: .
+    gate: interoperability
+    steps:
+      - type: make
+        makefile: Makefile
+        target: interoperability
         timeout: 20m
   - module: .
     gate: docs

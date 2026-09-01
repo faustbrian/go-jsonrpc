@@ -73,6 +73,18 @@
       "coverage_required": false,
       "build_required": true,
       "build_tags": []
+    },
+    {
+      "module_directory": "interoperability",
+      "directory": ".",
+      "name": "main",
+      "import_path": "github.com/faustbrian/go-jsonrpc/interoperability",
+      "kind": "harness",
+      "production": false,
+      "executable": true,
+      "coverage_required": false,
+      "build_required": true,
+      "build_tags": []
     }
   ]
 }
