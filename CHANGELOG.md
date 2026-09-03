@@ -17,6 +17,10 @@ All notable changes to this project are documented here. The format is based on
 
 ### Documentation
 
+- Record RFC 9110 Erratum 9162 as behavior-neutral for the JSON-RPC HTTP
+  transport because its `Allow` response emits one method in one field value
+  and `Content-Type` remains a singleton field.
+
 - Make every registered JSON-RPC decision reproducible against the pinned
   maintained peer and separate maintained-peer differential evidence from
   official-fixture interoperability evidence.
