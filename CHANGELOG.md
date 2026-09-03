@@ -6,7 +6,24 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Changed
+
+- Adopt the checksum-verified `go-library-tools` v1.4.0 CLI and immutable
+  workflow so local and hosted gates use the final authoritative release
+  identities.
+
+- Publish schema-v2 cohesion metadata and versioned ecosystem navigation for
+  the JSON-RPC module and its interoperability harness.
+
+- Adopt the checksum-verified `go-library-tools` v1.3.0 CLI, add the local
+  cohesion gate, and pin reusable-workflow cohesion enforcement to its final
+  immutable revision.
+
 ### Documentation
+
+- Record RFC 9110 Erratum 9162 as behavior-neutral for the JSON-RPC HTTP
+  transport because its `Allow` response emits one method in one field value
+  and `Content-Type` remains a singleton field.
 
 - Make every registered JSON-RPC decision reproducible against the pinned
   maintained peer and separate maintained-peer differential evidence from

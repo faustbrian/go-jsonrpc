@@ -311,6 +311,12 @@ Additional authoritative source: `{"id":"rfc6839-source","version":"RFC 6839","u
 
 </details>
 
+## Authority review history
+
+| Reviewed | Authority | Disposition | Decision impact |
+| --- | --- | --- | --- |
+| 2026-09-03 | RFC 9110 Erratum 9162 | Behavior-neutral. The proposed comma-space spelling concerns combining repeated HTTP field lines. The HTTP handler emits exactly one method through one `Allow` field value, while `Content-Type` is a singleton field; neither path combines repeated list-valued field lines. | `JSONRPC-DEC-009` and `JSONRPC-DEC-010` remain unchanged, including their conformance bindings and HTTP status, method, and media-type policies. The prior monitor digest was `38bd006c96f8963d58573f704c5313a5f81968b90738c03ade0b036ec7bbdf4b`; the reviewed response is now bound by `specification/monitoring.json`. |
+
 ## Unresolved decisions
 
 No known material JSON-RPC 2.0 interpretation is unresolved at this revision.

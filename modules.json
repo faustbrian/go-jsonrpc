@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "repository": "github.com/faustbrian/go-jsonrpc",
   "go_version": "1.26.6",
   "modules": [
@@ -89,6 +89,87 @@
       "family_label": "Protocols And Descriptions",
       "family_description": "Standards, envelopes, schemas, descriptions, signatures, and wire interoperability.",
       "family_order": 3,
+      "cohesion": {
+        "family": "protocols-and-descriptions",
+        "secondary_capabilities": [
+          "data-encoding",
+          "http-and-service-edge",
+          "protocols-and-schemas",
+          "testing-and-conformance",
+          "transport-and-networking"
+        ],
+        "responsibility": "Provide bounded transport-neutral JSON-RPC 2.0 envelopes, dispatch, clients, middleware, hooks, and an optional HTTP binding.",
+        "non_goals": [
+          "Own service discovery, application authorization, business methods, or a general HTTP framework.",
+          "Apply automatic retry or detach request work from caller cancellation.",
+          "Require a telemetry backend or expose sensitive parameters and results by default."
+        ],
+        "public_package_identifier": "jsonrpc",
+        "primary_entry_packages": [
+          "github.com/faustbrian/go-jsonrpc"
+        ],
+        "package_selection": {
+          "github.com/faustbrian/go-jsonrpc": "Use jsonrpc for protocol envelopes, dispatch, clients, middleware, hooks, and the optional net/http binding."
+        },
+        "lifecycle_status": "active",
+        "maturity": "stable",
+        "construction_styles": [
+          "functional-options",
+          "plain-function",
+          "validated-value"
+        ],
+        "lifecycle_styles": [
+          "stateless"
+        ],
+        "ownership": {
+          "configuration": "caller",
+          "mutable_inputs": [
+            "borrow",
+            "copy"
+          ],
+          "runtime_resources": "caller",
+          "background_work": "none"
+        },
+        "optional_owned_dependencies": [],
+        "adapters": [],
+        "companions": [
+          "github.com/faustbrian/go-openrpc"
+        ],
+        "supported_go": {
+          "minimum": "1.26.6",
+          "tested": [
+            "1.26.6"
+          ]
+        },
+        "supported_platforms": [
+          "portable-go"
+        ],
+        "supported_backends": [],
+        "supported_protocols": [
+          "http-1-1",
+          "http-2",
+          "json-rpc-2-0"
+        ],
+        "documentation": {
+          "readme": "README.md",
+          "api": "docs/api.md",
+          "adoption": "docs/adoption.md",
+          "security": "docs/security.md",
+          "compatibility": "docs/compatibility.md",
+          "performance": "docs/performance.md",
+          "examples": "docs/examples.md",
+          "faq": "docs/faq.md",
+          "changelog": "CHANGELOG.md",
+          "pkg_go_dev": "https://pkg.go.dev/github.com/faustbrian/go-jsonrpc",
+          "ecosystem_index": "https://github.com/faustbrian/go-library-tools/blob/v1.3.0/docs/ecosystem/README.md"
+        },
+        "known_good_compatibility_sets": [],
+        "delivery": {
+          "implementation": "not-started",
+          "hardening": "not-started",
+          "release": "not-started"
+        }
+      },
       "version": "1.0.0",
       "tag_prefix": "v",
       "owned_dependencies": [],
@@ -158,6 +239,10 @@
       "lifecycle": "internal",
       "kind": "interoperability harness",
       "releasable": false,
+      "family": "protocols-and-descriptions",
+      "family_label": "Protocols And Descriptions",
+      "family_description": "Standards, envelopes, schemas, descriptions, signatures, and wire interoperability.",
+      "family_order": 3,
       "version": "unreleased",
       "tag_prefix": "interoperability/v",
       "owned_dependencies": [
