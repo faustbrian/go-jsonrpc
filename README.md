@@ -84,10 +84,13 @@ for production review.
 
 Release history is maintained in [CHANGELOG.md](CHANGELOG.md).
 Runnable programs live under [examples](examples).
+Shared construction, ownership, lifecycle, and composition expectations are in
+the versioned [Golib ecosystem index](https://github.com/faustbrian/go-library-tools/blob/v1.3.0/docs/ecosystem/README.md)
+and [package-family selection guidance](https://github.com/faustbrian/go-library-tools/blob/v1.3.0/docs/ecosystem/design-language.md#package-families-and-selection).
 
 ## Development
 
-Run `make check` before submitting a change. This enforces formatting, static
+Run `make cohesion` and `make check` before submitting a change. This enforces formatting, static
 analysis, race tests, meaningful 100% coverage, fuzz smoke, benchmarks,
 documentation, and vulnerability scanning.
 

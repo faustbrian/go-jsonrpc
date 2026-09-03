@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Changed
+
+- Publish schema-v2 cohesion metadata and versioned ecosystem navigation for
+  the JSON-RPC module and its interoperability harness.
+
+- Adopt the checksum-verified `go-library-tools` v1.3.0 CLI, add the local
+  cohesion gate, and pin reusable-workflow cohesion enforcement to its final
+  immutable revision.
+
 ### Documentation
 
 - Make every registered JSON-RPC decision reproducible against the pinned
