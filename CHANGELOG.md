@@ -11,6 +11,8 @@ All notable changes to this project are documented here. The format is based on
 - Adopt the checksum-verified `go-library-tools` v1.4.0 CLI and immutable
   workflow so local and hosted gates use the final authoritative release
   identities.
+- Advance consumer navigation to the v1.4.0 ecosystem index and its
+  protocols-and-descriptions family guidance.
 
 - Publish schema-v2 cohesion metadata and versioned ecosystem navigation for
   the JSON-RPC module and its interoperability harness.

@@ -85,8 +85,8 @@ for production review.
 Release history is maintained in [CHANGELOG.md](CHANGELOG.md).
 Runnable programs live under [examples](examples).
 Shared construction, ownership, lifecycle, and composition expectations are in
-the versioned [Golib ecosystem index](https://github.com/faustbrian/go-library-tools/blob/v1.3.0/docs/ecosystem/README.md)
-and [package-family selection guidance](https://github.com/faustbrian/go-library-tools/blob/v1.3.0/docs/ecosystem/design-language.md#package-families-and-selection).
+the versioned [Golib ecosystem index](https://github.com/faustbrian/go-library-tools/blob/v1.4.0/docs/ecosystem/README.md)
+and its [Protocols and descriptions family](https://github.com/faustbrian/go-library-tools/blob/v1.4.0/docs/ecosystem/design-language.md#package-families-and-selection).
 
 ## Development
 
