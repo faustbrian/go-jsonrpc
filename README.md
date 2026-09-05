@@ -82,7 +82,9 @@ Dispatchers and the default client are safe for concurrent calls subject to
 the concurrency contracts of caller-supplied handlers, middleware, hooks,
 transports, ID generators, and HTTP clients. The package starts no background
 work. Callers own those collaborators and all application resources; the HTTP
-binding closes each request or response body that it receives.
+binding closes accepted JSON request bodies and every received response body.
+Bodies rejected before request admission remain owned by the HTTP server or
+direct caller.
 
 ## Documentation
 

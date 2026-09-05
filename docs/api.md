@@ -114,32 +114,38 @@ construction, and nil option functions are ignored. Repeated positive limits,
 non-nil ID generators, and non-nil HTTP clients use the last supplied value;
 non-positive limits and nil values for those two collaborators leave the
 current value unchanged. Repeated `WithHooks` and `WithErrorMapper` options
-replace the previous value, including a nil error mapper; invoking a nil mapper
-is panic-contained as an internal error. Repeated header names use the last
-value, and repeated `WithMiddleware` options append middleware in order.
-Constructors copy the middleware function values, hook set, and HTTP header
-strings that they retain.
+replace the previous value. A zero `Hooks` value disables both callbacks; a nil
+error mapper is panic-contained as an internal error when invoked. Repeated
+header names use the last value, and repeated `WithMiddleware` options append
+middleware in order; nil middleware entries remain in that order but are
+skipped during execution. Constructors copy the middleware function values,
+hook set, and HTTP header strings that they retain.
 
 `Dispatcher` retains the supplied `Registry`. `Client` retains its `Transport`
 and `IDGenerator`, and `HTTPTransport` retains a supplied `*http.Client`; these
 collaborators remain caller-owned and must satisfy their own concurrency and
 lifecycle contracts. The package does not close a supplied HTTP client or its
-idle connections. `HTTPHandler` closes the inbound request body, and
-`HTTPTransport` closes every received response body. Request payloads and
-transport reply buffers are used only for the owning synchronous call.
+idle connections. `HTTPHandler` closes a request body after the method and
+content type pass admission; a body rejected before that point remains owned
+by the HTTP server or direct caller. `HTTPTransport` closes every received
+response body. Request payloads and transport reply buffers are used only for
+the owning synchronous call.
 
 Handlers, middleware-produced handlers, error mappers, and hooks execute
-synchronously in the goroutine calling `Dispatch`; the package creates no
-goroutine or callback timeout. Concurrent dispatch can therefore invoke them
-concurrently. They must honor the supplied context, avoid unbounded blocking,
-and provide their own synchronization. Middleware constructors are applied for
-each method execution. Hook panics are contained. `OnRequest` may return a
-derived context; nil falls back to the original context. Hook request and
-response arguments are observation values whose mutation cannot change the
-protocol result and should be copied before retention.
+synchronously in the goroutine calling `Dispatch` or `DispatchSingle`; the
+package creates no goroutine or callback timeout. Concurrent dispatch can
+therefore invoke them concurrently. They must honor the supplied context,
+avoid unbounded blocking, and provide their own synchronization. Middleware
+constructors are applied for each method execution. Hook panics are contained.
+`OnRequest` may return a derived context; nil falls back to the original
+context. Hook request and response arguments are observation values whose
+mutation cannot change the protocol result and should be copied before
+retention.
 
-`Batch` writes `Result`, `Error`, and internal correlation state on each
-`BatchCall`; callers must not share one `BatchCall` across concurrent calls.
+`Batch` resets `Error` on every `BatchCall`, assigns internal correlation state
+on non-notifications, and may decode into the value referenced by `Result`.
+Callers must not share a `BatchCall` or its result target across concurrent
+calls.
 
 ## Compatibility notes
 

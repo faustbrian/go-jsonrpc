@@ -23,11 +23,11 @@ All notable changes to this project are documented here. The format is based on
 
 ### Documentation
 
-- Complete the public callback, option, resource-ownership, and tested-platform
-  contracts; make the interoperability harness an explicit engineering-only
-  entry point with a clear clean-resolution boundary; record its pinned peer
-  dependency and the OpenRPC reverse edge; and advance all ecosystem
-  navigation to v1.5.3.
+- Complete the public callback, option, request-admission resource-ownership,
+  and tested-platform contracts; make the interoperability harness an
+  explicit engineering-only entry point with a clear clean-resolution
+  boundary; record its pinned peer dependency and the OpenRPC reverse edge;
+  and advance all ecosystem navigation to v1.5.3.
 
 - Record RFC 9110 Erratum 9162 as behavior-neutral for the JSON-RPC HTTP
   transport because its `Allow` response emits one method in one field value

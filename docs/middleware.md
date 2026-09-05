@@ -30,11 +30,11 @@ stack to the internal error, visible to `OnResponse` but never serialized.
 ## Callback contract
 
 Handlers, middleware-produced handlers, the error mapper, and hooks run
-synchronously in the goroutine calling `Dispatch`. The dispatcher starts no
-goroutines and adds no callback timeout: a callback that blocks or ignores the
-context blocks that dispatch. Concurrent calls may invoke every callback
-concurrently, so callback state and every retained collaborator must provide
-its own synchronization.
+synchronously in the goroutine calling `Dispatch` or `DispatchSingle`. The
+dispatcher starts no goroutines and adds no callback timeout: a callback that
+blocks or ignores the context blocks that dispatch. Concurrent calls may
+invoke every callback concurrently, so callback state and every retained
+collaborator must provide its own synchronization.
 
 Middleware constructors are invoked for each method execution, in reverse
 wrapping order, without a registry lock held. Re-entry is therefore governed by
