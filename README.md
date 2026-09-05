@@ -74,6 +74,18 @@ notification, and batch examples.
 - adapters can use `Dispatcher.DispatchSingle` to apply a compatible custom
   response envelope without decoding an already encoded dispatcher response
 
+The root module is the only public package. The separate
+[`interoperability`](interoperability/README.md) module is an internal,
+non-releasable engineering harness and is not an application dependency.
+
+Dispatchers and the default client are safe for concurrent calls subject to
+the concurrency contracts of caller-supplied handlers, middleware, hooks,
+transports, ID generators, and HTTP clients. The package starts no background
+work. Callers own those collaborators and all application resources; the HTTP
+binding closes accepted JSON request bodies and every received response body.
+Bodies rejected before request admission remain owned by the HTTP server or
+direct caller.
+
 ## Documentation
 
 Start with the [documentation index](docs/README.md), [quickstart](docs/quickstart.md),
@@ -85,8 +97,8 @@ for production review.
 Release history is maintained in [CHANGELOG.md](CHANGELOG.md).
 Runnable programs live under [examples](examples).
 Shared construction, ownership, lifecycle, and composition expectations are in
-the versioned [Golib ecosystem index](https://github.com/faustbrian/go-library-tools/blob/v1.4.0/docs/ecosystem/README.md)
-and its [Protocols and descriptions family](https://github.com/faustbrian/go-library-tools/blob/v1.4.0/docs/ecosystem/design-language.md#package-families-and-selection).
+the versioned [Golib ecosystem index](https://github.com/faustbrian/go-library-tools/blob/v1.5.3/docs/ecosystem/README.md)
+and its [Protocols and descriptions family](https://github.com/faustbrian/go-library-tools/blob/v1.5.3/docs/ecosystem/design-language.md#package-families-and-selection).
 
 ## Development
 

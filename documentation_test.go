@@ -82,7 +82,7 @@ func TestCoreDocumentationContract(t *testing.T) {
 		"docs/adoption.md":        {"Inventory", "Shadow", "Rollout", "Rollback"},
 		"docs/faq.md":             {"notification", "batch", "WebSocket"},
 		"docs/troubleshooting.md": {"Parse error", "Invalid Request", "Method not found", "Invalid params"},
-		"docs/compatibility.md":   {"Semantic Versioning", "Wire compatibility", "Planned stable releases"},
+		"docs/compatibility.md":   {"Semantic Versioning", "Wire compatibility", "Stable releases"},
 		"docs/releasing.md": {
 			"Release rehearsal",
 			"semantic-version",
@@ -129,7 +129,7 @@ func TestV1DocumentationContract(t *testing.T) {
 		"README.md":             {"stable v1 API and wire contract"},
 		"SECURITY.md":           {"latest stable v1 release", "Security fixes are applied"},
 		"ROADMAP.md":            {"## Post-v1 roadmap"},
-		"docs/compatibility.md": {"Beginning with the first `v1.0.0` release"},
+		"docs/compatibility.md": {"Beginning with the `v1.0.0` release"},
 		"docs/api.md":           {"Starting with `v1.0.0`"},
 		"go.mod":                {"module github.com/faustbrian/go-jsonrpc"},
 	}

@@ -107,9 +107,53 @@ exported as `CodeRequestLimitExceeded`, `CodeParseError`, `CodeInvalidRequest`,
 - Other transport sentinels are `ErrHTTPContentType` and
   `ErrResponseTooLarge`.
 
+## Options and ownership
+
+All option functions run synchronously, in caller-supplied order, during
+construction, and nil option functions are ignored. Repeated positive limits,
+non-nil ID generators, and non-nil HTTP clients use the last supplied value;
+non-positive limits and nil values for those two collaborators leave the
+current value unchanged. Repeated `WithHooks` and `WithErrorMapper` options
+replace the previous value. A zero `Hooks` value disables both callbacks; a nil
+error mapper is panic-contained as an internal error when invoked. Repeated
+header names use the last value, and repeated `WithMiddleware` options append
+middleware in order; nil middleware entries remain in that order but are
+skipped during execution. Constructors copy the middleware function values,
+hook set, and HTTP header strings that they retain.
+
+`Dispatcher` retains the supplied `Registry`. `Client` retains its `Transport`
+and `IDGenerator`, and `HTTPTransport` retains a supplied `*http.Client`; these
+collaborators remain caller-owned and must satisfy their own concurrency and
+lifecycle contracts. The package does not close a supplied HTTP client or its
+idle connections. `HTTPHandler` closes a request body after the method and
+content type pass admission; a body rejected before that point remains owned
+by the HTTP server or direct caller. `HTTPTransport` closes every received
+response body. Request payloads and transport reply buffers are used only for
+the owning synchronous call.
+
+Handlers, middleware-produced handlers, error mappers, and hooks execute
+synchronously in the goroutine calling `Dispatch` or `DispatchSingle`; the
+package creates no goroutine or callback timeout. Concurrent dispatch can
+therefore invoke them concurrently. They must honor the supplied context,
+avoid unbounded blocking, and provide their own synchronization. Middleware
+constructors are applied for each method execution. Hook panics are contained.
+`OnRequest` may return a derived context; nil falls back to the original
+context. Hook request and response arguments are observation values whose
+mutation cannot change the protocol result and should be copied before
+retention.
+
+`Batch` resets `Error` on every `BatchCall`, assigns internal correlation state
+on non-notifications, and may decode into the value referenced by `Result`.
+Callers must not share a `BatchCall` or its result target across concurrent
+calls.
+
 ## Compatibility notes
 
 Wire behavior, standard error codes, ID semantics, middleware ordering, and
 exported error identities are compatibility-sensitive. Starting with `v1.0.0`,
 changes follow the stable-release guarantees in the compatibility policy.
-All package constructors ignore nil functional options.
+All package constructors ignore nil functional options. The public module is
+pure Go, has no build tags or cgo, and requires Go 1.26.6 or later. Repository
+CI verifies exactly Go 1.26.6 on Ubuntu 24.04; other operating systems and
+architectures are source-portability expectations, not published tested
+platform claims.
