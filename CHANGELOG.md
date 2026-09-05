@@ -23,6 +23,11 @@ All notable changes to this project are documented here. The format is based on
 
 ### Documentation
 
+- Complete the public callback, option, resource-ownership, and tested-platform
+  contracts; make the interoperability harness an explicit engineering-only
+  entry point; record its pinned peer dependency and the OpenRPC reverse edge;
+  and advance all ecosystem navigation to v1.5.3.
+
 - Record RFC 9110 Erratum 9162 as behavior-neutral for the JSON-RPC HTTP
   transport because its `Allow` response emits one method in one field value
   and `Content-Type` remains a singleton field.
@@ -70,7 +75,7 @@ All notable changes to this project are documented here. The format is based on
 - Replace archived monorepo and AI-generated documentation entry points with
   a standalone, human-oriented documentation structure.
 
-## [1.0.0] - 2026-08-25
+## [1.0.0] - 2026-08-26
 
 ### Fixed
 

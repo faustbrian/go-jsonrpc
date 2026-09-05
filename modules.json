@@ -161,7 +161,7 @@
           "faq": "docs/faq.md",
           "changelog": "CHANGELOG.md",
           "pkg_go_dev": "https://pkg.go.dev/github.com/faustbrian/go-jsonrpc",
-          "ecosystem_index": "https://github.com/faustbrian/go-library-tools/blob/v1.4.0/docs/ecosystem/README.md"
+          "ecosystem_index": "https://github.com/faustbrian/go-library-tools/blob/v1.5.3/docs/ecosystem/README.md"
         },
         "known_good_compatibility_sets": [],
         "delivery": {
@@ -177,6 +177,7 @@
         "github.com/faustbrian/go-authorization",
         "github.com/faustbrian/go-circuit-breaker/integration/consumers",
         "github.com/faustbrian/go-http-middleware/integration/siblings",
+        "github.com/faustbrian/go-openrpc",
         "github.com/faustbrian/go-service/integration/reference-http"
       ],
       "external_runtime_dependencies": [],
@@ -249,7 +250,9 @@
         "github.com/faustbrian/go-jsonrpc"
       ],
       "reverse_owned_dependencies": [],
-      "external_runtime_dependencies": [],
+      "external_runtime_dependencies": [
+        "github.com/creachadair/jrpc2"
+      ],
       "required_services": [],
       "build_tags": [],
       "test_tags": [],

@@ -27,6 +27,27 @@ Hooks are protected from panics. A context returned by `OnRequest` flows into
 middleware and the handler. Recovered handler panics attach a local cause and
 stack to the internal error, visible to `OnResponse` but never serialized.
 
+## Callback contract
+
+Handlers, middleware-produced handlers, the error mapper, and hooks run
+synchronously in the goroutine calling `Dispatch`. The dispatcher starts no
+goroutines and adds no callback timeout: a callback that blocks or ignores the
+context blocks that dispatch. Concurrent calls may invoke every callback
+concurrently, so callback state and every retained collaborator must provide
+its own synchronization.
+
+Middleware constructors are invoked for each method execution, in reverse
+wrapping order, without a registry lock held. Re-entry is therefore governed by
+the callback's own boundedness and the public concurrency contract of whatever
+it calls; recursive dispatch is not bounded by this package.
+
+`OnRequest` receives a copied request and may return a derived context for the
+remaining lifecycle. A panic or nil return preserves the original context.
+`OnResponse` receives the active request and a copied response after execution,
+including the internal response for a notification. Treat callback arguments
+as borrowed for that invocation and copy any data that must be retained.
+Mutation cannot change the protocol response.
+
 ## Ordering
 
 Middleware is listed outermost first:
