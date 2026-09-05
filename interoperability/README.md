@@ -11,7 +11,9 @@ contract to match another implementation.
 The harness depends on `github.com/faustbrian/go-jsonrpc` v1.0.0 and directly
 on the external `github.com/creachadair/jrpc2` v1.3.5 module. The peer remains
 outside the public root module: this harness does not make jrpc2 a runtime
-dependency of applications that adopt `go-jsonrpc`.
+dependency of applications that adopt `go-jsonrpc`. Its `go.mod` pin supports
+clean standalone resolution; the repository `go.work` makes the documented
+command exercise the current root checkout against the pinned peer.
 
 ## Run and evidence
 
@@ -30,10 +32,9 @@ HTTP status mapping. Differences are attributable to the matching
 [`JSONRPC-DEC-*`](../docs/specification-decisions.md) decision rather than
 treated as peer failures.
 
-The bridge and HTTP response bodies are closed by the harness. It owns no
-external service, persistent state, background worker, credential, or
-production lifecycle. Fixtures are synthetic and must not contain production
-payloads or secrets.
+The peer bridge and every HTTP response body are closed by the harness. It owns
+no external service, persistent state, credential, or production lifecycle.
+Fixtures are synthetic and must not contain production payloads or secrets.
 
 ## Compatibility and maintenance
 
