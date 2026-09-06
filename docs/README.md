@@ -32,4 +32,6 @@ Use this index to choose the shortest path from evaluation to production.
 
 - [Repository standards](repository-standards.md)
 - [Contributing](../CONTRIBUTING.md)
+- [Support](../SUPPORT.md)
+- [Private vulnerability reporting](../SECURITY.md)
 - [Release history](../CHANGELOG.md)

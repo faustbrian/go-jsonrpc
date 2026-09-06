@@ -23,6 +23,10 @@ All notable changes to this project are documented here. The format is based on
 
 ### Documentation
 
+- Publish direct support, discussion, and private vulnerability-reporting
+  routes, and make support and security policy discoverable from the primary
+  documentation indexes.
+
 - Complete the public callback, option, request-admission resource-ownership,
   and tested-platform contracts; make the interoperability harness an
   explicit engineering-only entry point with a clear clean-resolution

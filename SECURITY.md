@@ -8,9 +8,10 @@ here when offered.
 
 ## Reporting A Vulnerability
 
-Use GitHub private vulnerability reporting for this repository. Include a
-minimal reproducer, expected and observed behavior, affected versions, impact,
-and any suggested mitigation. Do not include secrets or production data.
+Use [GitHub private vulnerability reporting](https://github.com/faustbrian/go-jsonrpc/security/advisories/new)
+for this repository. Include a minimal reproducer, expected and observed
+behavior, affected versions, impact, and any suggested mitigation. Do not
+include secrets or production data.
 
 ## Response Process
 
