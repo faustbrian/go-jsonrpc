@@ -18,7 +18,7 @@ Beginning with the `v1.0.0` release:
 - minor releases add backward-compatible APIs and optional behavior;
 - major releases may remove or change exported APIs or documented semantics.
 
-The module declares and supports Go 1.26.6 or later. Its authoritative CI uses
+The module declares and supports Go 1.27.0 or later. Its authoritative CI uses
 the exact Go version in `.go-version` and currently runs on Ubuntu 24.04. The
 source is pure Go and has no build tags, cgo, assembly, or OS-specific files;
 macOS, Windows, other Linux distributions, and non-runner architectures are

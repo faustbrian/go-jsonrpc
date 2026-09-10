@@ -153,7 +153,7 @@ Wire behavior, standard error codes, ID semantics, middleware ordering, and
 exported error identities are compatibility-sensitive. Starting with `v1.0.0`,
 changes follow the stable-release guarantees in the compatibility policy.
 All package constructors ignore nil functional options. The public module is
-pure Go, has no build tags or cgo, and requires Go 1.26.6 or later. Repository
+pure Go, has no build tags or cgo, and requires Go 1.27.0 or later. Repository
 CI verifies exactly Go 1.27.0 on Ubuntu 24.04; other operating systems and
 architectures are source-portability expectations, not published tested
 platform claims.
