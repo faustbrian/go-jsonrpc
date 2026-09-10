@@ -7,7 +7,7 @@
 [![Documentation](https://img.shields.io/badge/docs-checked_in_CI-blue)](docs/)
 [![Go Reference](https://pkg.go.dev/badge/github.com/faustbrian/go-jsonrpc.svg)](https://pkg.go.dev/github.com/faustbrian/go-jsonrpc)
 [![Release](https://img.shields.io/github/v/release/faustbrian/go-jsonrpc?sort=semver)](https://github.com/faustbrian/go-jsonrpc/releases)
-[![Go](https://img.shields.io/badge/go-1.26.6-00ADD8?logo=go)](https://go.dev/)
+[![Go](https://img.shields.io/badge/go-1.27.0-00ADD8?logo=go)](https://go.dev/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 `jsonrpc` is a transport-neutral, full JSON-RPC 2.0 server and client
@@ -22,7 +22,7 @@ package code is held to meaningful 100% statement coverage.
 
 ## Requirements
 
-- Go 1.26.6 or later
+- Go 1.27.0 or later
 - no runtime dependencies outside the standard library
 
 ## Installation

@@ -38,10 +38,10 @@ Fixtures are synthetic and must not contain production payloads or secrets.
 
 ## Compatibility and maintenance
 
-The module requires Go 1.26.6. Repository CI verifies it on Ubuntu 24.04; other
-platforms are not part of the published tested-platform claim. Update the peer
-version, module checksums, recorded matrix, decision evidence, and changelog in
-one reviewed change when the comparison target changes.
+The module requires Go 1.27.0. Repository CI uses Go 1.27.0 on Ubuntu 24.04;
+other platforms are not part of the published tested-platform claim. Update
+the peer version, module checksums, recorded matrix, decision evidence, and
+changelog in one reviewed change when the comparison target changes.
 
 Use the public [`jsonrpc` module](../README.md) in applications. Shared
 construction, ownership, lifecycle, and composition expectations are in the
