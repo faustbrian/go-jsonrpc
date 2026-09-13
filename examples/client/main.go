@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	jsonrpc "github.com/faustbrian/go-jsonrpc"
+	jsonrpc "github.com/faustbrian/go-jsonrpc/v2"
 )
 
 func main() {

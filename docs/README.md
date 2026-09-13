@@ -19,6 +19,7 @@ Use this index to choose the shortest path from evaluation to production.
 - [Compatibility](compatibility.md)
 - [Performance](performance.md)
 - [Security](security.md)
+- [Threat model](threat-model.md)
 
 ## Operations and migration
 

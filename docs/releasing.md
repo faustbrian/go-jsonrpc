@@ -1,5 +1,9 @@
 # Versioning and release guide
 
+The active root source is planned v2 and release-blocked. Do not create a v2
+tag until every required gate passes and the owned-consumer migration plan in
+the adoption guide is resolved. Released v1 remains the public install target.
+
 Releases are immutable semantic-version tags created from a clean, reviewed
 `main` commit. The repository workflow runs the shared `golib` release contract
 before publishing release notes.
@@ -31,7 +35,7 @@ In a clean temporary module, install the released package and compile a
 minimal client:
 
 ```sh
-go get github.com/faustbrian/go-jsonrpc@vX.Y.Z
+go get github.com/faustbrian/go-jsonrpc@v1
 ```
 
 The package's public module identity, API baseline, conformance fixtures, and

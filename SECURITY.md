@@ -21,7 +21,9 @@ disclosure should wait until a fix or agreed mitigation is available.
 
 ## Package Security Boundary
 
-Requests, responses, parameters, IDs, batches, transports, and handler error data are untrusted protocol inputs. Body and batch limits are part of the maintained security boundary.
+Requests, responses, parameters, IDs, batches, transports, HTTP diagnostics,
+endpoint configuration, and handler error data are untrusted inputs. Request,
+response, and batch limits are part of the maintained security boundary.
 
 ## Application Responsibilities
 
@@ -31,4 +33,5 @@ and business-level validation. Package safeguards do not replace those
 controls.
 
 See [docs/security.md](docs/security.md) for adoption guidance and the
-maintained security contract.
+maintained security contract and [docs/threat-model.md](docs/threat-model.md)
+for trust boundaries and residual risks.

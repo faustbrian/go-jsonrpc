@@ -4,7 +4,26 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [Unreleased] - root v2.0.0
+
+The root source tree now uses the planned `/v2` module path. V2 remains
+unpublished and non-releasable until its release gates and owned-consumer
+migrations pass. Existing consumers must remain on released v1 without local
+`replace` directives.
+
+### Security
+
+- Bound dispatcher response encoding and client batch-response work, omit
+  peer-controlled HTTP status bodies unless a bounded preview is explicitly
+  enabled, reject endpoint user information, redact endpoint-bearing request
+  failures, and give the default HTTP client a finite timeout without
+  process-environment proxies.
+- Keep the HTTP response read sentinel overflow-safe when a caller explicitly
+  selects the maximum `int64` response limit.
+- Document the network, parser, callback, credential, and resource-exhaustion
+  threat boundaries and caller-owned SSRF controls.
+- Record JSONRPC-DEC-011 sha256:1a056e137f51acb08aa7e38e106512775573946788ab51adac1cef85086423a7
+  for bounded single and batch response-overflow behavior.
 
 ### Changed
 

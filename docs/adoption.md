@@ -1,5 +1,23 @@
 # Production adoption guide
 
+## Pending v2 migration
+
+This source tree uses `github.com/faustbrian/go-jsonrpc/v2`, but no v2 tag is
+published. Consumer migration is blocked until that release exists. The known
+owned consumers still referring to released v1 are:
+
+- `go-authorization`;
+- `go-circuit-breaker/integration/consumers`;
+- `go-http-middleware/integration/siblings`;
+- `go-openrpc`;
+- `go-service/integration/reference-http`; and
+- this repository's separately versioned interoperability harness.
+
+Those consumers remain unchanged here. After v2 publication, their owners must
+update imports deliberately and verify the affected integration boundary.
+Existing v1 consumers continue to receive the published v1 behavior; the
+hardening described below is available only in the pending v2 source.
+
 Adopt the package at a protocol boundary, not by rewriting business logic at
 the same time. The sequence below keeps wire compatibility observable and
 rollback straightforward.

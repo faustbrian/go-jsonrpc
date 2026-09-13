@@ -262,7 +262,7 @@ func TestHTTPDefensivePaths(t *testing.T) {
 	}
 	withBody := (&HTTPStatusError{StatusCode: 500, Body: "failure"}).Error()
 	withoutBody := (&HTTPStatusError{StatusCode: 500}).Error()
-	if !strings.Contains(withBody, "failure") || strings.Contains(withoutBody, "failure") {
+	if strings.Contains(withBody, "failure") || strings.Contains(withoutBody, "failure") {
 		t.Errorf("HTTPStatusError strings = %q and %q", withBody, withoutBody)
 	}
 

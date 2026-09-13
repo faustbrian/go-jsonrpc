@@ -17,16 +17,18 @@ import (
 // Registration errors identify reserved method names, duplicate methods, and
 // nil handlers.
 var (
-	ErrInvalidMethodName       = errors.New("jsonrpc: invalid method name")
-	ErrMethodAlreadyRegistered = errors.New("jsonrpc: method already registered")
-	ErrNilHandler              = errors.New("jsonrpc: nil handler")
-	parameterNames             sync.Map
+	ErrInvalidMethodName        = errors.New("jsonrpc: invalid method name")
+	ErrMethodAlreadyRegistered  = errors.New("jsonrpc: method already registered")
+	ErrNilHandler               = errors.New("jsonrpc: nil handler")
+	errDispatchResponseTooLarge = errors.New("jsonrpc: dispatch response too large")
+	parameterNames              sync.Map
 )
 
 const (
-	defaultMaxDispatchBytes int64 = 4 << 20
-	defaultMaxBatchItems          = 1024
-	defaultMaxNestingDepth        = 10_000
+	defaultMaxDispatchBytes         int64 = 4 << 20
+	defaultMaxDispatchResponseBytes int64 = 4 << 20
+	defaultMaxBatchItems                  = 1024
+	defaultMaxNestingDepth                = 10_000
 )
 
 // Handler implements one JSON-RPC method.
@@ -143,6 +145,19 @@ func WithMaxDispatchBytes(limit int64) DispatcherOption {
 	}
 }
 
+// WithMaxDispatchResponseBytes changes the dispatcher's four-MiB encoded
+// response limit. Values smaller than the minimal protocol error use that
+// minimal size so a valid bounded failure can still be returned.
+func WithMaxDispatchResponseBytes(limit int64) DispatcherOption {
+	return func(dispatcher *Dispatcher) {
+		if limit <= 0 {
+			return
+		}
+		minimum := int64(len(internalErrorBatchResponse))
+		dispatcher.maxResponseBytes = max(limit, minimum)
+	}
+}
+
 // WithMaxBatchItems changes the dispatcher's default limit of 1,024 members.
 func WithMaxBatchItems(limit int) DispatcherOption {
 	return func(dispatcher *Dispatcher) {
@@ -172,6 +187,7 @@ type Dispatcher struct {
 	errorMapper      ErrorMapper
 	hooks            Hooks
 	maxDispatchBytes int64
+	maxResponseBytes int64
 	maxBatchItems    int
 	maxNestingDepth  int
 }
@@ -185,6 +201,7 @@ func NewDispatcher(registry *Registry, options ...DispatcherOption) *Dispatcher 
 	dispatcher := &Dispatcher{
 		registry:         registry,
 		maxDispatchBytes: defaultMaxDispatchBytes,
+		maxResponseBytes: defaultMaxDispatchResponseBytes,
 		maxBatchItems:    defaultMaxBatchItems,
 		maxNestingDepth:  defaultMaxNestingDepth,
 		errorMapper: func(err error) *Error {
@@ -233,7 +250,7 @@ func (d *Dispatcher) Dispatch(ctx context.Context, payload []byte) ([]byte, bool
 	if !ok {
 		return nil, false
 	}
-	return marshalResponse(response), true
+	return d.marshalResponse(response), true
 }
 
 // DispatchSingle processes one non-batch JSON-RPC message and returns its
@@ -324,18 +341,37 @@ func (d *Dispatcher) dispatchBatch(ctx context.Context, payload []byte) ([]byte,
 	if len(items) == 0 {
 		return d.failure(ctx, InvalidRequest())
 	}
-	responses := make([]Response, 0, len(items))
+	var encoded bytes.Buffer
+	encoded.WriteByte('[')
+	replies := 0
+	overflow := false
 	for _, item := range items {
 		response, ok := d.dispatchItem(ctx, item)
 		if ok {
-			responses = append(responses, response)
+			replies++
+			member := d.marshalResponse(response)
+			required := int64(encoded.Len() + len(member) + 1)
+			if replies > 1 {
+				required++
+			}
+			if overflow || required > d.maxResponseBytes {
+				overflow = true
+				continue
+			}
+			if replies > 1 {
+				encoded.WriteByte(',')
+			}
+			encoded.Write(member)
 		}
 	}
-	if len(responses) == 0 {
+	if replies == 0 {
 		return nil, false
 	}
-	encoded, _ := json.Marshal(responses)
-	return encoded, true
+	if overflow {
+		return []byte(internalErrorBatchResponse), true
+	}
+	encoded.WriteByte(']')
+	return encoded.Bytes(), true
 }
 
 func (d *Dispatcher) dispatchItem(ctx context.Context, payload []byte) (response Response, reply bool) {
@@ -376,6 +412,7 @@ func (d *Dispatcher) execute(ctx context.Context, request Request) (response Res
 		if recovered := recover(); recovered != nil {
 			response = errorResponse(request.ID, InternalError().WithCause(fmt.Errorf("panic: %v\n%s", recovered, debug.Stack())))
 		}
+		response = d.boundResponse(response)
 	}()
 
 	handler, ok := d.registry.Lookup(request.Method)
@@ -411,7 +448,7 @@ func (d *Dispatcher) execute(ctx context.Context, request Request) (response Res
 func (d *Dispatcher) failure(ctx context.Context, rpcErr *Error) ([]byte, bool) {
 	response, reply := d.failureResponse(ctx, rpcErr)
 
-	return marshalResponse(response), reply
+	return d.marshalResponse(response), reply
 }
 
 func (d *Dispatcher) failureResponse(
@@ -479,6 +516,25 @@ func marshalResponse(response Response) []byte {
 		return encoded
 	}
 	return []byte(`{"jsonrpc":"2.0","error":{"code":-32603,"message":"Internal error"},"id":null}`)
+}
+
+const internalErrorResponse = `{"jsonrpc":"2.0","error":{"code":-32603,"message":"Internal error"},"id":null}`
+const internalErrorBatchResponse = `[` + internalErrorResponse + `]`
+
+func (d *Dispatcher) boundResponse(response Response) Response {
+	encoded, err := json.Marshal(response)
+	if err == nil && int64(len(encoded)) <= d.maxResponseBytes {
+		return response
+	}
+	return errorResponse(response.ID, InternalError().WithCause(errDispatchResponseTooLarge))
+}
+
+func (d *Dispatcher) marshalResponse(response Response) []byte {
+	encoded := marshalResponse(d.boundResponse(response))
+	if int64(len(encoded)) <= d.maxResponseBytes {
+		return encoded
+	}
+	return []byte(internalErrorResponse)
 }
 
 // DecodeParams strictly decodes params as T. Duplicate or unknown named

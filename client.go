@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -22,10 +23,14 @@ var (
 	ErrDuplicateResponse      = errors.New("jsonrpc: duplicate batch response")
 	ErrDuplicateRequestID     = errors.New("jsonrpc: duplicate batch request id")
 	ErrEmptyBatch             = errors.New("jsonrpc: empty client batch")
+	ErrClientBatchTooLarge    = errors.New("jsonrpc: client batch too large")
 	ErrClientResponseTooLarge = errors.New("jsonrpc: client response too large")
 )
 
-const defaultMaxClientResponseBytes int64 = 4 << 20
+const (
+	defaultMaxClientResponseBytes int64 = 4 << 20
+	defaultMaxClientBatchItems          = 1024
+)
 
 // Transport exchanges one complete JSON-RPC payload with a peer.
 type Transport interface {
@@ -82,6 +87,16 @@ func WithMaxClientResponseBytes(limit int64) ClientOption {
 	}
 }
 
+// WithMaxClientBatchItems changes the default limit of 1,024 calls sent and
+// response members inspected for one client batch.
+func WithMaxClientBatchItems(limit int) ClientOption {
+	return func(client *Client) {
+		if limit > 0 {
+			client.maxBatchItems = limit
+		}
+	}
+}
+
 // Client validates requests and correlates responses over a Transport. Its
 // default AtomicIDGenerator is safe for concurrent calls; custom transports,
 // generators, and BatchCall values retain their own concurrency contracts.
@@ -89,6 +104,7 @@ type Client struct {
 	transport        Transport
 	ids              IDGenerator
 	maxResponseBytes int64
+	maxBatchItems    int
 }
 
 // NewClient constructs a client. A nil transport is reported as ErrTransport
@@ -98,6 +114,7 @@ func NewClient(transport Transport, options ...ClientOption) *Client {
 		transport:        transport,
 		ids:              NewAtomicIDGenerator(0),
 		maxResponseBytes: defaultMaxClientResponseBytes,
+		maxBatchItems:    defaultMaxClientBatchItems,
 	}
 	for _, option := range options {
 		if option != nil {
@@ -189,6 +206,9 @@ func (client *Client) Batch(ctx context.Context, calls ...*BatchCall) error {
 	if len(calls) == 0 {
 		return ErrEmptyBatch
 	}
+	if len(calls) > client.maxBatchItems {
+		return ErrClientBatchTooLarge
+	}
 	requests := make([]Request, 0, len(calls))
 	pending := make(map[string]*BatchCall, len(calls))
 	for _, call := range calls {
@@ -229,12 +249,17 @@ func (client *Client) Batch(ctx context.Context, calls ...*BatchCall) error {
 	if len(trimmed) == 0 || trimmed[0] != '[' {
 		return ErrInvalidResponse
 	}
-	var responses []Response
-	if err := json.Unmarshal(trimmed, &responses); err != nil {
-		return fmt.Errorf("%w: %w", ErrInvalidResponse, err)
+	if err := validateBatchResponseCount(trimmed, client.maxBatchItems); err != nil {
+		return err
 	}
-	seen := make(map[string]struct{}, len(responses))
-	for _, response := range responses {
+	decoder := json.NewDecoder(bytes.NewReader(trimmed))
+	_, _ = decoder.Token()
+	seen := make(map[string]struct{}, len(pending))
+	for decoder.More() {
+		var response Response
+		if err := decoder.Decode(&response); err != nil {
+			return fmt.Errorf("%w: %w", ErrInvalidResponse, err)
+		}
 		if err := response.Validate(); err != nil {
 			return fmt.Errorf("%w: %w", ErrInvalidResponse, err)
 		}
@@ -259,6 +284,33 @@ func (client *Client) Batch(ctx context.Context, calls ...*BatchCall) error {
 	}
 	if len(seen) != len(pending) {
 		return ErrMissingResponse
+	}
+	return nil
+}
+
+func validateBatchResponseCount(payload []byte, limit int) error {
+	decoder := json.NewDecoder(bytes.NewReader(payload))
+	token, err := decoder.Token()
+	if err != nil || token != json.Delim('[') {
+		return ErrInvalidResponse
+	}
+	count := 0
+	for decoder.More() {
+		count++
+		if count > limit {
+			return ErrUnexpectedResponse
+		}
+		var response json.RawMessage
+		if err := decoder.Decode(&response); err != nil {
+			return fmt.Errorf("%w: %w", ErrInvalidResponse, err)
+		}
+	}
+	if _, err := decoder.Token(); err != nil {
+		return fmt.Errorf("%w: %w", ErrInvalidResponse, err)
+	}
+	var extra any
+	if err := decoder.Decode(&extra); !errors.Is(err, io.EOF) {
+		return ErrInvalidResponse
 	}
 	return nil
 }

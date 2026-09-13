@@ -272,6 +272,7 @@ func subtractDecimalMagnitudes(larger, smaller string) string {
 			borrow = 1
 		}
 		digit -= smallerDigit
+		// #nosec G115 -- validated decimal subtraction keeps digit within 0..9.
 		result[index] = '0' + byte(digit)
 	}
 	return strings.TrimLeft(string(result), "0")

@@ -57,9 +57,13 @@ deterministic and avoids silently imposing concurrency requirements on
 application code. The protocol permits batch responses in any order, so this
 is an implementation choice rather than a wire guarantee.
 
-The transport-neutral dispatcher enforces four-MiB payload and 1,024-member
-batch defaults. It validates the byte limit before parsing and pre-counts batch
-members before invoking any handler. A violation returns one
+The transport-neutral dispatcher enforces four-MiB payload and encoded-response
+limits plus a 1,024-member batch default. It validates the request byte limit
+before parsing and pre-counts batch members before invoking any handler.
+`WithMaxDispatchResponseBytes` bounds each encoded result and incrementally
+assembled batch output before bytes reach an adapter. Aggregate response
+overflow returns one bounded internal-error member in a response array. A
+request-side violation returns one
 `RequestLimitExceeded` response with a null ID because individual members were
 not dispatched. This is an implementation-defined server policy, not a
 JSON-RPC standard error. Raising an HTTP request limit may also require raising
@@ -89,7 +93,10 @@ response order is irrelevant. Transport errors wrap `ErrTransport`; valid
 JSON-RPC error objects remain `*Error` values.
 
 Client reply parsing has an independent four-MiB default, including for custom
-transports. This bounds protocol allocations after `RoundTrip` returns. A
+transports. Client batch calls are rejected above 1,024 members before request
+construction, and responses are pre-counted to the same bound without
+materializing a response slice. These limits bound
+package-owned protocol work after `RoundTrip` returns. A
 custom transport must also bound network or stream acquisition before building
 the returned byte slice; the client cannot retroactively prevent that
 transport-owned allocation.

@@ -117,7 +117,7 @@ func TestCoreDocumentationContract(t *testing.T) {
 	}
 }
 
-func TestV1DocumentationContract(t *testing.T) {
+func TestVersionedDocumentationContract(t *testing.T) {
 	t.Parallel()
 
 	required := map[string][]string{
@@ -126,12 +126,12 @@ func TestV1DocumentationContract(t *testing.T) {
 			"## [1.0.0]",
 			"[Unreleased]: https://github.com/faustbrian/go-jsonrpc/compare/v1.0.0...HEAD",
 		},
-		"README.md":             {"stable v1 API and wire contract"},
+		"README.md":             {"stable v1 API and wire contract", "planned, unpublished `github.com/faustbrian/go-jsonrpc/v2`"},
 		"SECURITY.md":           {"latest stable v1 release", "Security fixes are applied"},
 		"ROADMAP.md":            {"## Post-v1 roadmap"},
 		"docs/compatibility.md": {"Beginning with the `v1.0.0` release"},
-		"docs/api.md":           {"Starting with `v1.0.0`"},
-		"go.mod":                {"module github.com/faustbrian/go-jsonrpc"},
+		"docs/api.md":           {"released v1 line", "planned, unpublished v2 line"},
+		"go.mod":                {"module github.com/faustbrian/go-jsonrpc/v2"},
 	}
 
 	for path, fragments := range required {
@@ -199,6 +199,7 @@ func TestSpecificationDecisionRegister(t *testing.T) {
 		"JSONRPC-DEC-008",
 		"JSONRPC-DEC-009",
 		"JSONRPC-DEC-010",
+		"JSONRPC-DEC-011",
 		"## Unresolved decisions",
 		"Known peer behavior",
 		"Reconsider when",

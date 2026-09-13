@@ -205,6 +205,89 @@ func TestClientBatchValidation(t *testing.T) {
 	}
 }
 
+func TestClientBatchRejectsExcessReplyMembersBeforeDecodingResults(t *testing.T) {
+	t.Parallel()
+
+	transport := TransportFunc(func(context.Context, []byte) ([]byte, error) {
+		return []byte(`[
+			{"jsonrpc":"2.0","result":41,"id":1},
+			{"jsonrpc":"2.0","result":42,"id":1}
+		]`), nil
+	})
+	client := NewClient(transport, WithMaxClientBatchItems(1))
+	result := 0
+	err := client.Batch(context.Background(), &BatchCall{Method: "one", Result: &result})
+	if !errors.Is(err, ErrUnexpectedResponse) {
+		t.Fatalf("Batch(excess reply members) error = %v, want %v", err, ErrUnexpectedResponse)
+	}
+	if result != 0 {
+		t.Fatalf("Batch(excess reply members) decoded result = %d before rejecting count", result)
+	}
+}
+
+func TestClientBatchRejectsExcessCallsBeforeGeneratingIDsOrTransport(t *testing.T) {
+	t.Parallel()
+
+	called := false
+	client := NewClient(
+		TransportFunc(func(context.Context, []byte) ([]byte, error) {
+			called = true
+			return nil, nil
+		}),
+		WithMaxClientBatchItems(1),
+	)
+	err := client.Batch(
+		context.Background(),
+		&BatchCall{Method: "one"},
+		&BatchCall{Method: "two"},
+	)
+	if !errors.Is(err, ErrClientBatchTooLarge) {
+		t.Fatalf("Batch(excess calls) error = %v, want %v", err, ErrClientBatchTooLarge)
+	}
+	if called {
+		t.Fatal("Batch(excess calls) invoked transport")
+	}
+}
+
+func TestClientBatchRejectsMalformedResponseMember(t *testing.T) {
+	t.Parallel()
+
+	client := NewClient(TransportFunc(func(context.Context, []byte) ([]byte, error) {
+		return []byte(`[{"jsonrpc":"2.0","result":null,"id":{}}]`), nil
+	}))
+	err := client.Batch(context.Background(), &BatchCall{Method: "one"})
+	if !errors.Is(err, ErrInvalidResponse) {
+		t.Fatalf("Batch(malformed response member) error = %v, want %v", err, ErrInvalidResponse)
+	}
+}
+
+func TestValidateBatchResponseCountRejectsMalformedEnvelope(t *testing.T) {
+	t.Parallel()
+
+	for _, payload := range [][]byte{
+		[]byte(`{}`),
+		[]byte(`[`),
+		[]byte(`[}`),
+		[]byte(`[] trailing`),
+	} {
+		if err := validateBatchResponseCount(payload, 1); err == nil {
+			t.Errorf("validateBatchResponseCount(%q) unexpectedly succeeded", payload)
+		}
+	}
+}
+
+func TestClientBatchLimitAcceptsExactCountAndIgnoresZero(t *testing.T) {
+	t.Parallel()
+
+	client := NewClient(nil, WithMaxClientBatchItems(1), WithMaxClientBatchItems(0))
+	if client.maxBatchItems != 1 {
+		t.Fatalf("client batch limit = %d, want 1", client.maxBatchItems)
+	}
+	if err := validateBatchResponseCount([]byte(`[{}]`), 1); err != nil {
+		t.Fatalf("validateBatchResponseCount(exact limit) error = %v", err)
+	}
+}
+
 func TestClientBatchRejectsDuplicateRequestIDsBeforeTransport(t *testing.T) {
 	t.Parallel()
 

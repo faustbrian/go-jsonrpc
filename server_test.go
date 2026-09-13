@@ -446,6 +446,153 @@ func TestDispatcherRejectsResourceLimitViolationsBeforeDispatch(t *testing.T) {
 	assertJSONEqual(t, response, []byte(`{"jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found"},"id":1}`))
 }
 
+func TestDispatcherBoundsEncodedHandlerResults(t *testing.T) {
+	t.Parallel()
+
+	registry := NewRegistry()
+	_ = registry.Register("large", func(context.Context, json.RawMessage) (any, error) {
+		return strings.Repeat("x", 1024), nil
+	})
+	dispatcher := NewDispatcher(registry, WithMaxDispatchResponseBytes(128))
+
+	response, ok := dispatcher.Dispatch(
+		context.Background(),
+		[]byte(`{"jsonrpc":"2.0","method":"large","id":1}`),
+	)
+	if !ok {
+		t.Fatal("Dispatch(large result) omitted response")
+	}
+	if len(response) > 128 {
+		t.Fatalf("Dispatch(large result) response length = %d, want <= 128", len(response))
+	}
+	assertJSONEqual(t, response, []byte(`{"jsonrpc":"2.0","error":{"code":-32603,"message":"Internal error"},"id":1}`))
+
+	typed, ok := dispatcher.DispatchSingle(
+		context.Background(),
+		[]byte(`{"jsonrpc":"2.0","method":"large","id":2}`),
+	)
+	if !ok || typed.Error == nil || typed.Error.Code != CodeInternalError {
+		t.Fatalf("DispatchSingle(large result) = %#v, %t", typed, ok)
+	}
+}
+
+func TestDispatcherResponseLimitOptionBounds(t *testing.T) {
+	t.Parallel()
+
+	dispatcher := NewDispatcher(
+		nil,
+		WithMaxDispatchResponseBytes(0),
+		WithMaxDispatchResponseBytes(-1),
+		WithMaxDispatchResponseBytes(1),
+	)
+	if dispatcher.maxResponseBytes != int64(len(internalErrorBatchResponse)) {
+		t.Fatalf("response limit = %d, want %d", dispatcher.maxResponseBytes, len(internalErrorBatchResponse))
+	}
+
+	longID := strings.Repeat("x", len(internalErrorBatchResponse))
+	response, ok := dispatcher.Dispatch(
+		context.Background(),
+		[]byte(`{"jsonrpc":"2.0","method":"missing","id":"`+longID+`"}`),
+	)
+	if !ok {
+		t.Fatal("Dispatch(long ID) omitted response")
+	}
+	assertJSONEqual(t, response, []byte(internalErrorResponse))
+
+	unchanged := NewDispatcher(nil, WithMaxDispatchResponseBytes(0))
+	if unchanged.maxResponseBytes != defaultMaxDispatchResponseBytes {
+		t.Fatalf("zero response limit changed default to %d", unchanged.maxResponseBytes)
+	}
+}
+
+func TestDispatcherResponseLimitAcceptsExactSingleAndBatchSizes(t *testing.T) {
+	t.Parallel()
+
+	registry := NewRegistry()
+	_ = registry.Register("value", func(context.Context, json.RawMessage) (any, error) {
+		return strings.Repeat("x", 64), nil
+	})
+	single := []byte(`{"jsonrpc":"2.0","result":"` + strings.Repeat("x", 64) + `","id":1}`)
+	dispatcher := NewDispatcher(registry, WithMaxDispatchResponseBytes(int64(len(single))))
+	response, ok := dispatcher.Dispatch(
+		context.Background(),
+		[]byte(`{"jsonrpc":"2.0","method":"value","id":1}`),
+	)
+	if !ok {
+		t.Fatal("Dispatch(exact single response limit) omitted response")
+	}
+	assertJSONEqual(t, response, single)
+
+	exactError := errorResponse(StringID(strings.Repeat("i", 24)), InternalError())
+	exactErrorBytes, err := json.Marshal(exactError)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dispatcher = &Dispatcher{maxResponseBytes: int64(len(exactErrorBytes))}
+	assertJSONEqual(t, dispatcher.marshalResponse(exactError), exactErrorBytes)
+
+	oneMemberBatch := append(append([]byte{'['}, single...), ']')
+	dispatcher = NewDispatcher(registry, WithMaxDispatchResponseBytes(int64(len(oneMemberBatch))))
+	response, ok = dispatcher.Dispatch(context.Background(), []byte(`[
+		{"jsonrpc":"2.0","method":"value","id":1}
+	]`))
+	if !ok {
+		t.Fatal("Dispatch(exact one-member batch response limit) omitted response")
+	}
+	assertJSONEqual(t, response, oneMemberBatch)
+
+	_ = registry.Register("short-value", func(context.Context, json.RawMessage) (any, error) {
+		return strings.Repeat("x", 24), nil
+	})
+	batch := []byte(`[{"jsonrpc":"2.0","result":"xxxxxxxxxxxxxxxxxxxxxxxx","id":1},{"jsonrpc":"2.0","result":"xxxxxxxxxxxxxxxxxxxxxxxx","id":2}]`)
+	dispatcher = NewDispatcher(registry, WithMaxDispatchResponseBytes(int64(len(batch))))
+	response, ok = dispatcher.Dispatch(context.Background(), []byte(`[
+		{"jsonrpc":"2.0","method":"short-value","id":1},
+		{"jsonrpc":"2.0","method":"short-value","id":2}
+	]`))
+	if !ok {
+		t.Fatal("Dispatch(exact batch response limit) omitted response")
+	}
+	assertJSONEqual(t, response, batch)
+
+	dispatcher = NewDispatcher(registry, WithMaxDispatchResponseBytes(int64(len(batch)-1)))
+	response, ok = dispatcher.Dispatch(context.Background(), []byte(`[
+		{"jsonrpc":"2.0","method":"short-value","id":1},
+		{"jsonrpc":"2.0","method":"short-value","id":2}
+	]`))
+	if !ok {
+		t.Fatal("Dispatch(over-limit batch response) omitted response")
+	}
+	assertJSONEqual(t, response, []byte(internalErrorBatchResponse))
+}
+
+func TestDispatcherBoundsBatchResponseBeforeReturningBytes(t *testing.T) {
+	t.Parallel()
+
+	registry := NewRegistry()
+	var calls atomic.Int64
+	_ = registry.Register("large-error", func(context.Context, json.RawMessage) (any, error) {
+		calls.Add(1)
+		return nil, NewError(1, "failure").WithData(strings.Repeat("x", 96))
+	})
+	dispatcher := NewDispatcher(registry, WithMaxDispatchResponseBytes(140))
+	response, ok := dispatcher.Dispatch(context.Background(), []byte(`[
+		{"jsonrpc":"2.0","method":"large-error","id":1},
+		{"jsonrpc":"2.0","method":"large-error","id":2},
+		{"jsonrpc":"2.0","method":"large-error","id":3}
+	]`))
+	if !ok {
+		t.Fatal("Dispatch(large batch response) omitted response")
+	}
+	if len(response) > 140 {
+		t.Fatalf("batch response length = %d, want <= 140", len(response))
+	}
+	assertJSONEqual(t, response, []byte(`[{"jsonrpc":"2.0","error":{"code":-32603,"message":"Internal error"},"id":null}]`))
+	if calls.Load() != 3 {
+		t.Fatalf("response overflow executed %d handlers, want 3", calls.Load())
+	}
+}
+
 func TestNestingDepthIgnoresEscapedStringDelimiters(t *testing.T) {
 	t.Parallel()
 
