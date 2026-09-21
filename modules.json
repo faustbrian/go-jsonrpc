@@ -165,19 +165,18 @@
         },
         "known_good_compatibility_sets": [],
         "delivery": {
-          "implementation": "not-started",
-          "hardening": "not-started",
+          "implementation": "in-progress",
+          "hardening": "in-progress",
           "release": "not-started"
         }
       },
-      "version": "1.0.0",
+      "version": "1.1.0",
       "tag_prefix": "v",
       "owned_dependencies": [],
       "reverse_owned_dependencies": [
         "github.com/faustbrian/go-authorization",
         "github.com/faustbrian/go-circuit-breaker/integration/consumers",
         "github.com/faustbrian/go-http-middleware/integration/siblings",
-        "github.com/faustbrian/go-openrpc",
         "github.com/faustbrian/go-service/integration/reference-http"
       ],
       "external_runtime_dependencies": [],

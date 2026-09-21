@@ -6,9 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
+	"unicode"
 )
 
 // HTTP transport errors distinguish status, content-type, and body-limit
@@ -19,29 +22,48 @@ var (
 	ErrResponseTooLarge = errors.New("jsonrpc: HTTP response too large")
 )
 
-const defaultMaxResponseBytes int64 = 4 << 20
+const (
+	defaultMaxResponseBytes       int64 = 4 << 20
+	defaultMaxHTTPDiagnosticBytes       = 4 << 10
+	defaultHTTPTimeout                  = 30 * time.Second
+)
+
+var defaultHTTPTransport = func() *http.Transport {
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.Proxy = nil
+	return transport
+}()
 
 var defaultHTTPClient = &http.Client{
-	Transport: http.DefaultTransport.(*http.Transport).Clone(),
+	Transport: defaultHTTPTransport,
+	Timeout:   defaultHTTPTimeout,
 	CheckRedirect: func(*http.Request, []*http.Request) error {
 		return http.ErrUseLastResponse
 	},
 }
 
-// HTTPStatusError reports a non-200 HTTP response and its bounded body.
+type httpRequestError struct{ cause error }
+
+// Error returns a credential-safe request-failure description.
+func (*httpRequestError) Error() string { return "jsonrpc: HTTP request failed" }
+
+// Unwrap preserves programmatic inspection of the transport failure.
+func (err *httpRequestError) Unwrap() error { return err.cause }
+
+// HTTPStatusError reports a non-200 HTTP response. Body is empty by default and
+// populated only when the transport enables a bounded diagnostic preview.
 type HTTPStatusError struct {
 	// StatusCode is the peer's HTTP response status.
 	StatusCode int
-	// Body is the trimmed, bounded response body.
+	// Body is an untrusted, control-character-sanitized preview bounded to four
+	// KiB. It is empty by default, and Error deliberately omits it.
 	Body string
 }
 
-// Error returns the status code and, when present, response body.
+// Error returns only the status code. Body is excluded because it is
+// controlled by the remote peer and may contain secrets.
 func (err *HTTPStatusError) Error() string {
-	if err.Body == "" {
-		return fmt.Sprintf("%s: %d", ErrHTTPStatus, err.StatusCode)
-	}
-	return fmt.Sprintf("%s: %d: %s", ErrHTTPStatus, err.StatusCode, err.Body)
+	return fmt.Sprintf("%s: %d", ErrHTTPStatus, err.StatusCode)
 }
 
 // Unwrap returns ErrHTTPStatus.
@@ -50,8 +72,8 @@ func (err *HTTPStatusError) Unwrap() error { return ErrHTTPStatus }
 // HTTPTransportOption configures an HTTPTransport during construction.
 type HTTPTransportOption func(*HTTPTransport)
 
-// WithHTTPClient installs a non-nil HTTP client. Its timeout and redirect
-// policy remain caller-owned.
+// WithHTTPClient installs a non-nil HTTP client. Its timeout, redirect, proxy,
+// DNS, and dial policies remain caller-owned.
 func WithHTTPClient(client *http.Client) HTTPTransportOption {
 	return func(transport *HTTPTransport) {
 		switch client {
@@ -77,20 +99,34 @@ func WithMaxResponseBytes(limit int64) HTTPTransportOption {
 	}
 }
 
-// HTTPTransport exchanges JSON-RPC payloads over HTTP POST.
-type HTTPTransport struct {
-	endpoint         string
-	client           *http.Client
-	headers          http.Header
-	maxResponseBytes int64
+// WithHTTPDiagnosticPreviewBytes opts into retaining up to limit bytes of a
+// non-success response body in HTTPStatusError.Body. Values above four KiB are
+// clamped to four KiB. The preview remains untrusted and Error never prints it.
+func WithHTTPDiagnosticPreviewBytes(limit int64) HTTPTransportOption {
+	return func(transport *HTTPTransport) {
+		if limit > 0 {
+			transport.maxDiagnosticBytes = min(limit, int64(defaultMaxHTTPDiagnosticBytes))
+		}
+	}
 }
 
-// NewHTTPTransport validates an HTTP(S) endpoint and constructs a transport.
-// The default client does not follow redirects. Nil options are ignored.
+// HTTPTransport exchanges JSON-RPC payloads over HTTP POST.
+type HTTPTransport struct {
+	endpoint           string
+	client             *http.Client
+	headers            http.Header
+	maxResponseBytes   int64
+	maxDiagnosticBytes int64
+}
+
+// NewHTTPTransport validates an HTTP(S) endpoint without URL user information
+// and constructs a transport. The default client has a 30-second timeout and
+// does not follow redirects. Nil options are ignored.
 func NewHTTPTransport(endpoint string, options ...HTTPTransportOption) (*HTTPTransport, error) {
 	parsed, err := url.Parse(endpoint)
-	if err != nil || parsed.Host == "" || (parsed.Scheme != "http" && parsed.Scheme != "https") {
-		return nil, fmt.Errorf("jsonrpc: invalid HTTP endpoint %q", endpoint)
+	if err != nil || parsed.Host == "" || parsed.User != nil ||
+		(parsed.Scheme != "http" && parsed.Scheme != "https") {
+		return nil, errors.New("jsonrpc: invalid HTTP endpoint")
 	}
 	transport := &HTTPTransport{
 		endpoint:         parsed.String(),
@@ -120,13 +156,17 @@ func (transport *HTTPTransport) RoundTrip(ctx context.Context, payload []byte) (
 	request.Header.Set("Accept", "application/json")
 	response, err := transport.client.Do(request)
 	if err != nil {
-		return nil, err
+		return nil, &httpRequestError{cause: err}
 	}
 	defer func() { _ = response.Body.Close() }()
 	if response.StatusCode == http.StatusNoContent {
 		return nil, nil
 	}
-	body, err := io.ReadAll(io.LimitReader(response.Body, transport.maxResponseBytes+1))
+	readLimit := transport.maxResponseBytes
+	if readLimit < math.MaxInt64 {
+		readLimit++
+	}
+	body, err := io.ReadAll(io.LimitReader(response.Body, readLimit))
 	if err != nil {
 		return nil, err
 	}
@@ -136,11 +176,27 @@ func (transport *HTTPTransport) RoundTrip(ctx context.Context, payload []byte) (
 	if response.StatusCode != http.StatusOK {
 		return nil, &HTTPStatusError{
 			StatusCode: response.StatusCode,
-			Body:       strings.TrimSpace(string(body)),
+			Body:       sanitizeHTTPDiagnostic(body, transport.maxDiagnosticBytes),
 		}
 	}
 	if !IsJSONContentType(response.Header.Get("Content-Type")) {
 		return nil, ErrHTTPContentType
 	}
 	return body, nil
+}
+
+func sanitizeHTTPDiagnostic(body []byte, limit int64) string {
+	if limit == 0 {
+		return ""
+	}
+	body = body[:min(int64(len(body)), limit)]
+	text := strings.ToValidUTF8(string(body), "�")
+	sanitized := strings.Map(func(character rune) rune {
+		if unicode.IsControl(character) {
+			return ' '
+		}
+		return character
+	}, text)
+	sanitized = sanitized[:min(int64(len(sanitized)), limit)]
+	return strings.TrimSpace(strings.ToValidUTF8(sanitized, ""))
 }

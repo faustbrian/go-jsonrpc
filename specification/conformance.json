@@ -245,6 +245,27 @@
       "public_behavior": [
         "`HTTPHandler`, `HTTPTransport`, `IsJSONContentType`"
       ]
+    },
+    {
+      "id": "JSONRPC-DEC-011",
+      "authoritative_sources": [
+        "jsonrpc-2.0-source"
+      ],
+      "executable_evidence": [
+        "TestDispatcherBoundsEncodedHandlerResults",
+        "TestDispatcherBoundsBatchResponseBeforeReturningBytes"
+      ],
+      "fixtures": [
+        "server_test.go"
+      ],
+      "fuzz": [
+        "FuzzDispatcher"
+      ],
+      "differential_evidence": [],
+      "differential_classification": "not assessed",
+      "public_behavior": [
+        "`Dispatcher.Dispatch`, `Dispatcher.DispatchSingle`, `WithMaxDispatchResponseBytes`"
+      ]
     }
   ]
 }

@@ -311,6 +311,35 @@ Additional authoritative source: `{"id":"rfc6839-source","version":"RFC 6839","u
 
 </details>
 
+## JSONRPC-DEC-011: Bounded response overflow
+
+| Field | Decision |
+| --- | --- |
+| Status and owner | `resolved`; `jsonrpc` maintainers |
+| Source | JSON-RPC 2.0 [Response Object](https://www.jsonrpc.org/specification#response_object) and [Batch](https://www.jsonrpc.org/specification#batch) |
+| Classification | Defensive implementation policy |
+| Issue | JSON-RPC does not define a response-size limit or the wire result when a complete valid response would exceed a server implementation's limit. |
+| Credible interpretations | Allocate the complete response regardless of size; abort the transport; emit a single bounded error object; or preserve batch framing and emit one bounded error member. |
+| Known peer behavior | No peer comparison is claimed because the pinned interoperability peer does not expose the same response-limit contract. |
+| Selected behavior | A single oversized response becomes `Internal error` with the request ID when that bounded error fits. Aggregate batch overflow becomes a response Array containing one `Internal error` with `id: null`. The dispatcher executes batch members sequentially before it can know the final aggregate size. |
+| Security and resource consequences | Encoded bytes retained and returned by the dispatcher stay within the configured response limit. Handler-side effects may have completed even when aggregate overflow prevents per-ID outcomes from being returned. |
+| Compatibility and wire consequences | Overflow responses are valid JSON-RPC response shapes, but a null-ID batch error cannot correlate individual results. Clients must treat that outcome as ambiguous and retry only idempotent operations. |
+| Executable evidence | `TestDispatcherBoundsEncodedHandlerResults`, `TestDispatcherBoundsBatchResponseBeforeReturningBytes` |
+| Public surface | `Dispatcher.Dispatch`, `Dispatcher.DispatchSingle`, `WithMaxDispatchResponseBytes` |
+| Upstream record | JSON-RPC 2.0 defines response and batch shapes but no resource-limit error or maximum encoded size. |
+| Reconsider when | A successor specification defines resource-limit errors, or the dispatcher gains a streaming response contract. |
+
+<details>
+<summary>Machine-auditable bindings</summary>
+
+```json
+{"id":"JSONRPC-DEC-011","title":"Bounded response overflow","status":"resolved","owner":"`jsonrpc` maintainers","classification":"omission","decision_scope":"defensive","specification":"JSON-RPC 2.0","version":"JSON-RPC 2.0","source_authority":"jsonrpc-2.0-source","section":"JSON-RPC 2.0 [Response Object](https://www.jsonrpc.org/specification#response_object) and [Batch](https://www.jsonrpc.org/specification#batch)","requirement_strength":"not specified","issue":"JSON-RPC does not define a response-size limit or the wire result when a complete valid response would exceed a server implementation's limit.","interpretations":["Allocate the complete response regardless of size; abort the transport; emit a single bounded error object; or preserve batch framing and emit one bounded error member."],"peer_behavior":"No peer comparison is claimed because the pinned interoperability peer does not expose the same response-limit contract.","selected_behavior":"A single oversized response becomes Internal error with the request ID when that bounded error fits. Aggregate batch overflow becomes a response Array containing one Internal error with id null. The dispatcher executes batch members sequentially before it can know the final aggregate size.","rationale":"Preserve valid JSON-RPC response framing while bounding dispatcher-retained and adapter-written bytes.","security_consequences":"Encoded bytes retained and returned by the dispatcher stay within the configured response limit. Handler-side effects may have completed even when aggregate overflow prevents per-ID outcomes from being returned.","resource_consequences":"Encoded bytes retained and returned by the dispatcher stay within the configured response limit. Handler-returned object graphs and custom marshalers remain caller-bounded.","compatibility_consequences":"Overflow responses are valid JSON-RPC response shapes, but a null-ID batch error cannot correlate individual results. Clients must treat that outcome as ambiguous and retry only idempotent operations.","wire_consequences":"Single overflow returns one Response Object; aggregate batch overflow returns a Response Array with one null-ID error member.","executable_evidence":["TestDispatcherBoundsEncodedHandlerResults","TestDispatcherBoundsBatchResponseBeforeReturningBytes"],"fixture_evidence":["server_test.go"],"fuzz_evidence":["FuzzDispatcher"],"public_apis":["`Dispatcher.Dispatch`, `Dispatcher.DispatchSingle`, `WithMaxDispatchResponseBytes`"],"documentation":["docs/specification-decisions.md","docs/security.md","docs/threat-model.md"],"upstream_status":"JSON-RPC 2.0 defines response and batch shapes but no resource-limit error or maximum encoded size.","reconsider_when":"A successor specification defines resource-limit errors, or the dispatcher gains a streaming response contract.","differential_evidence":[]}
+```
+
+Authority URL: https://www.jsonrpc.org/specification
+
+</details>
+
 ## Authority review history
 
 | Reviewed | Authority | Disposition | Decision impact |

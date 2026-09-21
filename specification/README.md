@@ -39,6 +39,7 @@ bindings below remain module-owned specification evidence.
 | JSONRPC-DEC-008 | RFC 8259 Section 4 and JSON-RPC 2.0 objects | `TestProtocolDecodersRejectDuplicateMembers`, `TestDispatcherClassifiesNestedParameterDuplicatesAsInvalidParams` | `specification/interoperability.tsv` |
 | JSONRPC-DEC-009 | JSON-RPC 2.0 Notification and RFC 9110 HTTP 204 | `TestHTTPHandlerRequestAndNotification`, `TestHTTPTransportNoContent`, `TestDispatcherBatchEdgeCases` | `specification/interoperability.tsv` |
 | JSONRPC-DEC-010 | JSON-RPC 2.0, RFC 9110, and RFC 6839 | `TestHTTPHandlerTransportErrors`, `TestJSONContentTypes`, `TestHTTPHandlerRequestAndNotification`, `TestHTTPTransportRoundTrip` | `specification/interoperability.tsv` |
+| JSONRPC-DEC-011 | JSON-RPC 2.0 Response Object and Batch | `TestDispatcherBoundsEncodedHandlerResults`, `TestDispatcherBoundsBatchResponseBeforeReturningBytes` | Not assessed; the peer has no equivalent response-limit contract |
 
 When the specification or an accepted erratum changes an example, retain the
 old fixture in history, update the transcription from the authoritative page,

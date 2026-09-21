@@ -1,5 +1,25 @@
 # Production adoption guide
 
+## Stable v1 adoption
+
+The source tree uses the canonical `github.com/faustbrian/go-jsonrpc` module
+path. Consumers can adopt the bounded transport hardening without a major-path
+migration. The known owned consumers are:
+
+- `go-authorization`;
+- `go-circuit-breaker/integration/consumers`;
+- `go-http-middleware/integration/siblings`;
+- `go-service/integration/reference-http`; and
+- this repository's separately versioned interoperability harness.
+
+Those consumers remain on the canonical v1 import path and must be verified
+against the exact candidate source during pre-merge integration. No local
+`replace` directives are permitted in published release metadata.
+
+`go-openrpc` is a companion shape-compatibility boundary, not a direct
+dependency: its adapter intentionally mirrors the handler contract without
+importing this module. Verify that structural adapter contract separately.
+
 Adopt the package at a protocol boundary, not by rewriting business logic at
 the same time. The sequence below keeps wire compatibility observable and
 rollback straightforward.

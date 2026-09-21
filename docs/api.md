@@ -1,7 +1,7 @@
 # Public API reference
 
-This is the semantic reference for the exported surface. Exact Go signatures
-are also available through `go doc github.com/faustbrian/go-jsonrpc`.
+This is the semantic reference for the active stable-v1 surface. Exact Go
+signatures are available from this checkout through `go doc .`.
 
 ## Protocol
 
@@ -56,9 +56,11 @@ exported as `CodeRequestLimitExceeded`, `CodeParseError`, `CodeInvalidRequest`,
   request or batch and returns bytes plus a boolean indicating whether a reply
   exists. `DispatchSingle` processes one non-batch message and returns the
   typed `Response` before wire encoding for compatible adapter-owned response
-  envelopes. Direct payloads default to four MiB and batches to 1,024 members;
-  `WithMaxDispatchBytes`, `WithMaxBatchItems`, and `WithMaxNestingDepth` can
-  raise or lower the byte, batch-member, and JSON nesting bounds.
+  envelopes. Direct payloads and encoded responses default to four MiB, and
+  batches default to 1,024 members. `WithMaxDispatchBytes`,
+  `WithMaxDispatchResponseBytes`, `WithMaxBatchItems`, and
+  `WithMaxNestingDepth` can raise or lower these bounds. Response limits below
+  the minimal bounded protocol-error array are clamped to that encoded size.
 - `Middleware` wraps a `Handler`. `WithMiddleware` installs middleware in the
   listed order, with the first item outermost.
 - `ErrorMapper` converts ordinary application errors to safe RPC errors.
@@ -79,7 +81,9 @@ exported as `CodeRequestLimitExceeded`, `CodeParseError`, `CodeInvalidRequest`,
 - `Client` is created with `NewClient`. `Call` decodes into a supplied pointer,
   `Notify` sends a notification, and `Batch` sends one or more `BatchCall`
   values. Reply parsing defaults to four MiB and can be changed with
-  `WithMaxClientResponseBytes`.
+  `WithMaxClientResponseBytes`. Client batch calls and reply inspection both
+  default to 1,024 members and can be changed with
+  `WithMaxClientBatchItems`.
 - `Call[T]` is the typed result helper.
 - `BatchCall` holds `Method`, `Params`, `Result`, and `Notification`. After a
   valid response, its `Error` holds any per-call RPC failure.
@@ -88,7 +92,7 @@ exported as `CodeRequestLimitExceeded`, `CodeParseError`, `CodeInvalidRequest`,
 - Client validation sentinels are `ErrTransport`, `ErrInvalidResponse`,
   `ErrMismatchedID`, `ErrUnexpectedResponse`, `ErrMissingResponse`,
   `ErrDuplicateResponse`, `ErrDuplicateRequestID`,
-  `ErrClientResponseTooLarge`, and `ErrEmptyBatch`.
+  `ErrClientBatchTooLarge`, `ErrClientResponseTooLarge`, and `ErrEmptyBatch`.
 
 ## HTTP
 
@@ -96,13 +100,19 @@ exported as `CodeRequestLimitExceeded`, `CodeParseError`, `CodeInvalidRequest`,
   `WithMaxRequestBytes` changes its four-megabyte default request limit.
 - `IsJSONContentType` recognizes `application/json`,
   `application/json-rpc`, and `application/*+json`, including parameters.
-- `NewHTTPTransport` validates an HTTP(S) endpoint and returns a client
-  transport. `WithHTTPClient`, `WithHTTPHeader`, and `WithMaxResponseBytes`
-  configure it. Direct `RoundTrip` calls return request-construction errors,
-  including a nil context, before network I/O. The default client does not
-  follow redirects, preventing configured headers from crossing origins;
-  `WithHTTPClient` explicitly opts into that client's redirect policy.
-- `HTTPStatusError` exposes `StatusCode` and the bounded response `Body`.
+- `NewHTTPTransport` validates an HTTP(S) endpoint without URL user information
+  and returns a client transport. `WithHTTPClient`, `WithHTTPHeader`, and
+  `WithMaxResponseBytes` configure it. `WithHTTPDiagnosticPreviewBytes`
+  explicitly opts into a control-sanitized non-success body preview capped at
+  four KiB. Direct `RoundTrip` calls return request-construction errors,
+  including a nil context, before network I/O.
+  The default client has a 30-second timeout, does not follow redirects, and
+  does not consult process proxy variables, preventing configured headers from
+  crossing implicit intermediaries or origins. `WithHTTPClient` explicitly
+  opts into that client's timeout, redirect, proxy, DNS, and dial policies.
+- `HTTPStatusError` exposes `StatusCode`. Its `Body` is empty by default and
+  contains a sanitized bounded preview only after explicit opt-in; its `Error`
+  string always omits the body.
   `errors.Is` recognizes `ErrHTTPStatus`.
 - Other transport sentinels are `ErrHTTPContentType` and
   `ErrResponseTooLarge`.
@@ -150,8 +160,9 @@ calls.
 ## Compatibility notes
 
 Wire behavior, standard error codes, ID semantics, middleware ordering, and
-exported error identities are compatibility-sensitive. Starting with `v1.0.0`,
-changes follow the stable-release guarantees in the compatibility policy.
+exported error identities are compatibility-sensitive. The released v1 line
+follows the stable-release guarantees in the compatibility policy; this source
+tree is the maintained stable v1 line.
 All package constructors ignore nil functional options. The public module is
 pure Go, has no build tags or cgo, and requires Go 1.27.0 or later. Repository
 CI verifies exactly Go 1.27.0 on Ubuntu 24.04; other operating systems and

@@ -1,5 +1,8 @@
 # Versioning and release guide
 
+The active root source is stable v1. Do not create a major-path migration or
+publish a `/v2` module; releases use the canonical root module path.
+
 Releases are immutable semantic-version tags created from a clean, reviewed
 `main` commit. The repository workflow runs the shared `golib` release contract
 before publishing release notes.
@@ -31,7 +34,7 @@ In a clean temporary module, install the released package and compile a
 minimal client:
 
 ```sh
-go get github.com/faustbrian/go-jsonrpc@vX.Y.Z
+go get github.com/faustbrian/go-jsonrpc@v1
 ```
 
 The package's public module identity, API baseline, conformance fixtures, and

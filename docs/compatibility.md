@@ -9,6 +9,12 @@ Resolved choices in the
 compatibility policy. Changing one requires protocol review and a changelog
 entry even when exported Go signatures are unchanged.
 
+## Stable v1 line
+
+The active source remains `github.com/faustbrian/go-jsonrpc`. The maintained
+`api/baseline.txt` includes the additive security hardening; there is no
+unpublished `/v2` migration line or replacement requirement.
+
 ## Stable releases
 
 Beginning with the `v1.0.0` release:

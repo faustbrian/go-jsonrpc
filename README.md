@@ -17,8 +17,10 @@ fuzz-tested.
 
 ## Status
 
-The package has a stable v1 API and wire contract. Production
-package code is held to meaningful 100% statement coverage.
+The package exposes the stable v1 API and wire contract. This source tree
+retains that canonical module identity while adding bounded transport and
+diagnostic hardening. Production package code is held to meaningful 100%
+statement coverage.
 
 ## Requirements
 
@@ -28,8 +30,11 @@ package code is held to meaningful 100% statement coverage.
 ## Installation
 
 ```sh
-go get github.com/faustbrian/go-jsonrpc
+go get github.com/faustbrian/go-jsonrpc@v1
 ```
+
+The canonical v1 module path carries the hardened behavior; no `/v2` migration
+or replacement directive is required.
 
 ## Quickstart
 
@@ -91,7 +96,8 @@ direct caller.
 Start with the [documentation index](docs/README.md), [quickstart](docs/quickstart.md),
 [guide for adopting the package](docs/adoption.md), and [API reference](docs/api.md). Use the
 [conformance matrix](docs/conformance.md), [middleware guide](docs/middleware.md),
-[security guide](docs/security.md), and [specification decision register](docs/specification-decisions.md)
+[security guide](docs/security.md), [threat model](docs/threat-model.md), and
+[specification decision register](docs/specification-decisions.md)
 for production review.
 
 Release history is maintained in [CHANGELOG.md](CHANGELOG.md).
@@ -118,7 +124,8 @@ explicit compatibility analysis.
 
 Report vulnerabilities privately according to [SECURITY.md](SECURITY.md).
 Review [docs/security.md](docs/security.md) before exposing a dispatcher to
-untrusted clients.
+untrusted clients, and use the [threat model](docs/threat-model.md) to assign
+transport, credential, and network-egress ownership.
 
 ## License
 
