@@ -124,7 +124,7 @@ func TestVersionedDocumentationContract(t *testing.T) {
 		"CHANGELOG.md": {
 			"## [Unreleased]",
 			"## [1.0.0]",
-			"[Unreleased]: https://github.com/faustbrian/go-jsonrpc/compare/v1.0.0...HEAD",
+			"[Unreleased]: https://github.com/faustbrian/go-jsonrpc/compare/v1.1.0...HEAD",
 		},
 		"README.md":             {"stable v1 API and wire contract", "canonical v1 module path"},
 		"SECURITY.md":           {"latest stable v1 release", "Security fixes are applied"},
