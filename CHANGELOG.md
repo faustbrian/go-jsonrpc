@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-21
+
 The root source tree retains the canonical v1 module path. Security hardening
 is released on that stable path after the normal compatibility and consumer
 gates pass; no `/v2` migration or local replacement is required.
@@ -260,5 +262,6 @@ The following initial scope is included in `v1.0.0`.
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/
-[Unreleased]: https://github.com/faustbrian/go-jsonrpc/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/faustbrian/go-jsonrpc/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/faustbrian/go-jsonrpc/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/faustbrian/go-jsonrpc/releases/tag/v1.0.0
