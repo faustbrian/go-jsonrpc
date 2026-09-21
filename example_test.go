@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http/httptest"
 
-	jsonrpc "github.com/faustbrian/go-jsonrpc/v2"
+	jsonrpc "github.com/faustbrian/go-jsonrpc"
 )
 
 func Example() {

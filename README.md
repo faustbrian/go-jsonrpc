@@ -17,10 +17,10 @@ fuzz-tested.
 
 ## Status
 
-The latest published package has a stable v1 API and wire contract. This source
-tree prepares the planned, unpublished `github.com/faustbrian/go-jsonrpc/v2`
-module. Its release is blocked until the v2 gates and owned-consumer migrations
-pass. Production package code is held to meaningful 100% statement coverage.
+The package exposes the stable v1 API and wire contract. This source tree
+retains that canonical module identity while adding bounded transport and
+diagnostic hardening. Production package code is held to meaningful 100%
+statement coverage.
 
 ## Requirements
 
@@ -33,8 +33,8 @@ pass. Production package code is held to meaningful 100% statement coverage.
 go get github.com/faustbrian/go-jsonrpc@v1
 ```
 
-The hardened v2 source is not available from the public module proxy until a
-`v2` tag is published. Existing applications must remain on v1 until then.
+The canonical v1 module path carries the hardened behavior; no `/v2` migration
+or replacement directive is required.
 
 ## Quickstart
 

@@ -4,12 +4,11 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased] - root v2.0.0
+## [Unreleased]
 
-The root source tree now uses the planned `/v2` module path. V2 remains
-unpublished and non-releasable until its release gates and owned-consumer
-migrations pass. Existing consumers must remain on released v1 without local
-`replace` directives.
+The root source tree retains the canonical v1 module path. Security hardening
+is released on that stable path after the normal compatibility and consumer
+gates pass; no `/v2` migration or local replacement is required.
 
 ### Security
 
@@ -49,7 +48,8 @@ migrations pass. Existing consumers must remain on released v1 without local
 - Complete the public callback, option, request-admission resource-ownership,
   and tested-platform contracts; make the interoperability harness an
   explicit engineering-only entry point with a clear clean-resolution
-  boundary; record its pinned peer dependency and the OpenRPC reverse edge;
+  boundary; record its pinned peer dependency and the OpenRPC structural
+  compatibility boundary;
   and advance all ecosystem navigation to v1.5.3.
 
 - Record RFC 9110 Erratum 9162 as behavior-neutral for the JSON-RPC HTTP

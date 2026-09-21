@@ -5,14 +5,14 @@
   "modules": [
     {
       "directory": ".",
-      "module_path": "github.com/faustbrian/go-jsonrpc/v2",
+      "module_path": "github.com/faustbrian/go-jsonrpc",
       "go_version": "1.27.0",
       "packages": [
         {
           "module_directory": ".",
           "directory": ".",
           "name": "jsonrpc",
-          "import_path": "github.com/faustbrian/go-jsonrpc/v2",
+          "import_path": "github.com/faustbrian/go-jsonrpc",
           "kind": "public",
           "production": true,
           "executable": true,
@@ -24,7 +24,7 @@
           "module_directory": ".",
           "directory": "cmd/semvercheck",
           "name": "main",
-          "import_path": "github.com/faustbrian/go-jsonrpc/v2/cmd/semvercheck",
+          "import_path": "github.com/faustbrian/go-jsonrpc/cmd/semvercheck",
           "kind": "tooling",
           "production": false,
           "executable": true,
@@ -36,7 +36,7 @@
           "module_directory": ".",
           "directory": "examples/client",
           "name": "main",
-          "import_path": "github.com/faustbrian/go-jsonrpc/v2/examples/client",
+          "import_path": "github.com/faustbrian/go-jsonrpc/examples/client",
           "kind": "example",
           "production": false,
           "executable": true,
@@ -48,7 +48,7 @@
           "module_directory": ".",
           "directory": "examples/e2e",
           "name": "main",
-          "import_path": "github.com/faustbrian/go-jsonrpc/v2/examples/e2e",
+          "import_path": "github.com/faustbrian/go-jsonrpc/examples/e2e",
           "kind": "example",
           "production": false,
           "executable": true,
@@ -60,7 +60,7 @@
           "module_directory": ".",
           "directory": "examples/server",
           "name": "main",
-          "import_path": "github.com/faustbrian/go-jsonrpc/v2/examples/server",
+          "import_path": "github.com/faustbrian/go-jsonrpc/examples/server",
           "kind": "example",
           "production": false,
           "executable": true,
@@ -72,7 +72,7 @@
           "module_directory": ".",
           "directory": "internal/semver",
           "name": "semver",
-          "import_path": "github.com/faustbrian/go-jsonrpc/v2/internal/semver",
+          "import_path": "github.com/faustbrian/go-jsonrpc/internal/semver",
           "kind": "tooling",
           "production": false,
           "executable": true,
@@ -82,9 +82,9 @@
         }
       ],
       "purpose": "`jsonrpc` is a transport-neutral, full JSON-RPC 2.0 server and client package. Protocol behavior is explicit, errors are auditable, middleware is composable, HTTP is optional, and malformed input is conformance- and fuzz-tested.",
-      "lifecycle": "planned",
+      "lifecycle": "stable",
       "kind": "public library",
-      "releasable": false,
+      "releasable": true,
       "family": "protocols-and-descriptions",
       "family_label": "Protocols And Descriptions",
       "family_description": "Standards, envelopes, schemas, descriptions, signatures, and wire interoperability.",
@@ -106,13 +106,13 @@
         ],
         "public_package_identifier": "jsonrpc",
         "primary_entry_packages": [
-          "github.com/faustbrian/go-jsonrpc/v2"
+          "github.com/faustbrian/go-jsonrpc"
         ],
         "package_selection": {
-          "github.com/faustbrian/go-jsonrpc/v2": "Use jsonrpc for protocol envelopes, dispatch, clients, middleware, hooks, and the optional net/http binding."
+          "github.com/faustbrian/go-jsonrpc": "Use jsonrpc for protocol envelopes, dispatch, clients, middleware, hooks, and the optional net/http binding."
         },
-        "lifecycle_status": "planned",
-        "maturity": "preview",
+        "lifecycle_status": "active",
+        "maturity": "stable",
         "construction_styles": [
           "functional-options",
           "plain-function",
@@ -165,19 +165,18 @@
         },
         "known_good_compatibility_sets": [],
         "delivery": {
-          "implementation": "not-started",
-          "hardening": "not-started",
-          "release": "blocked"
+          "implementation": "in-progress",
+          "hardening": "in-progress",
+          "release": "not-started"
         }
       },
-      "version": "2.0.0",
+      "version": "1.1.0",
       "tag_prefix": "v",
       "owned_dependencies": [],
       "reverse_owned_dependencies": [
         "github.com/faustbrian/go-authorization",
         "github.com/faustbrian/go-circuit-breaker/integration/consumers",
         "github.com/faustbrian/go-http-middleware/integration/siblings",
-        "github.com/faustbrian/go-openrpc",
         "github.com/faustbrian/go-service/integration/reference-http"
       ],
       "external_runtime_dependencies": [],

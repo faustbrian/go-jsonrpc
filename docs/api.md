@@ -1,6 +1,6 @@
 # Public API reference
 
-This is the semantic reference for the active planned-v2 surface. Exact Go
+This is the semantic reference for the active stable-v1 surface. Exact Go
 signatures are available from this checkout through `go doc .`.
 
 ## Protocol
@@ -162,7 +162,7 @@ calls.
 Wire behavior, standard error codes, ID semantics, middleware ordering, and
 exported error identities are compatibility-sensitive. The released v1 line
 follows the stable-release guarantees in the compatibility policy; this source
-tree is the planned, unpublished v2 line.
+tree is the maintained stable v1 line.
 All package constructors ignore nil functional options. The public module is
 pure Go, has no build tags or cgo, and requires Go 1.27.0 or later. Repository
 CI verifies exactly Go 1.27.0 on Ubuntu 24.04; other operating systems and

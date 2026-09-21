@@ -126,12 +126,12 @@ func TestVersionedDocumentationContract(t *testing.T) {
 			"## [1.0.0]",
 			"[Unreleased]: https://github.com/faustbrian/go-jsonrpc/compare/v1.0.0...HEAD",
 		},
-		"README.md":             {"stable v1 API and wire contract", "planned, unpublished `github.com/faustbrian/go-jsonrpc/v2`"},
+		"README.md":             {"stable v1 API and wire contract", "canonical v1 module path"},
 		"SECURITY.md":           {"latest stable v1 release", "Security fixes are applied"},
 		"ROADMAP.md":            {"## Post-v1 roadmap"},
 		"docs/compatibility.md": {"Beginning with the `v1.0.0` release"},
-		"docs/api.md":           {"released v1 line", "planned, unpublished v2 line"},
-		"go.mod":                {"module github.com/faustbrian/go-jsonrpc/v2"},
+		"docs/api.md":           {"released v1 line", "maintained stable v1 line"},
+		"go.mod":                {"module github.com/faustbrian/go-jsonrpc"},
 	}
 
 	for path, fragments := range required {

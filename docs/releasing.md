@@ -1,8 +1,7 @@
 # Versioning and release guide
 
-The active root source is planned v2 and release-blocked. Do not create a v2
-tag until every required gate passes and the owned-consumer migration plan in
-the adoption guide is resolved. Released v1 remains the public install target.
+The active root source is stable v1. Do not create a major-path migration or
+publish a `/v2` module; releases use the canonical root module path.
 
 Releases are immutable semantic-version tags created from a clean, reviewed
 `main` commit. The repository workflow runs the shared `golib` release contract

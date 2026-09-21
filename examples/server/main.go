@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	jsonrpc "github.com/faustbrian/go-jsonrpc/v2"
+	jsonrpc "github.com/faustbrian/go-jsonrpc"
 )
 
 func main() {

@@ -9,14 +9,11 @@ Resolved choices in the
 compatibility policy. Changing one requires protocol review and a changelog
 entry even when exported Go signatures are unchanged.
 
-## Pending v2 line
+## Stable v1 line
 
-The active source is the planned `github.com/faustbrian/go-jsonrpc/v2` module.
-It is preview, unpublished, and non-releasable while the release gates and the
-owned-consumer migrations listed in the adoption guide remain incomplete.
-`api/v1.txt` preserves the released-v1 API inventory; `api/v2.txt` is the active
-planned-v2 baseline. Public installation and package-reference links continue
-to identify released v1 until a v2 tag exists.
+The active source remains `github.com/faustbrian/go-jsonrpc`. The maintained
+`api/baseline.txt` includes the additive security hardening; there is no
+unpublished `/v2` migration line or replacement requirement.
 
 ## Stable releases
 

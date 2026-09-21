@@ -1,3 +1,3 @@
-module github.com/faustbrian/go-jsonrpc/v2
+module github.com/faustbrian/go-jsonrpc
 
 go 1.27.0
