@@ -8,7 +8,7 @@ decisions with pinned `github.com/creachadair/jrpc2` v1.3.5 behavior and
 records deliberate differences rather than changing the public package
 contract to match another implementation.
 
-The harness depends on `github.com/faustbrian/go-jsonrpc` v1.0.0 and directly
+The harness depends on `github.com/faustbrian/go-jsonrpc` v1.1.0 and directly
 on the external `github.com/creachadair/jrpc2` v1.3.5 module. The peer remains
 outside the public root module: this harness does not make jrpc2 a runtime
 dependency of applications that adopt `go-jsonrpc`. Its `go.mod` pin supports
