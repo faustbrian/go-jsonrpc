@@ -133,7 +133,7 @@
         "optional_owned_dependencies": [],
         "adapters": [],
         "companions": [
-          "github.com/faustbrian/go-openrpc"
+          "github.com/faustbrian/go-openrpc/v2"
         ],
         "supported_go": {
           "minimum": "1.27.0",
