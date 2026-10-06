@@ -4,7 +4,7 @@ go 1.27.0
 
 require (
 	github.com/creachadair/jrpc2 v1.3.5
-	github.com/faustbrian/go-jsonrpc v1.1.0
+	github.com/faustbrian/go-jsonrpc v1.1.1
 )
 
 require (
