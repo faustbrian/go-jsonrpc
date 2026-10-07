@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-10-07
+
+### Changed
+
+- Correct the OpenRPC companion path to its published `/v2` module while
+  preserving the JSON-RPC public API and runtime behavior.
+- Align the engineering-only interoperability harness with published
+  JSON-RPC v1.1.1; retain its pinned independent peer and recorded matrix.
+
 ## [1.1.1] - 2026-10-01
 
 ### Changed
@@ -269,7 +278,8 @@ The following initial scope is included in `v1.0.0`.
 
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/
-[Unreleased]: https://github.com/faustbrian/go-jsonrpc/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/faustbrian/go-jsonrpc/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/faustbrian/go-jsonrpc/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/faustbrian/go-jsonrpc/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/faustbrian/go-jsonrpc/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/faustbrian/go-jsonrpc/releases/tag/v1.0.0
