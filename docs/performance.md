@@ -12,9 +12,14 @@ benchmark duration.
 Run:
 
 ```sh
-make benchmark
-make test-race
+GOWORK=off go test ./... -run '^$' -bench . -benchtime=100ms -benchmem
+GOWORK=off go test -race ./...
 ```
+
+Select these explicit benchmark and full race routes for the affected
+performance or concurrency risk. `make check-full` retains the configured
+100 ms benchmark campaign; ordinary local and PR checks do not run that full
+campaign.
 
 Performance changes must preserve protocol semantics and error behavior.
 Allocation reductions are not accepted when they weaken validation, duplicate

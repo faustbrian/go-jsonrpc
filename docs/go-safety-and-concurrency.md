@@ -54,8 +54,12 @@ be described as an equivalent type-system guarantee.
 
 ### Static And Source Analysis
 
-- `make check` MUST reject forbidden low-level features and run the shared
-  vet, lint, race, and fuzz gates.
+- `make check` MUST reject forbidden low-level features and run bounded local
+  vet, lint, deterministic tests (including fuzz seeds and saved corpus), and
+  selected concurrency assertions. Changed-source CI MUST also run affected
+  active fuzz smoke; local exploration selects a target explicitly.
+  `make check-full` MUST retain the full shared race and fuzz gates for their
+  selected risk or release boundary.
 - `go vet`, Staticcheck, security linting, error checks, context checks, and
   HTTP-body ownership checks MUST remain enabled through the repository lint
   configuration.

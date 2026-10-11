@@ -11,7 +11,9 @@ before publishing release notes.
 
 1. Confirm the public API and documented protocol compatibility impact.
 2. Move the relevant `CHANGELOG.md` entries into a dated release section.
-3. Run `make ci` and resolve every required failure.
+3. Run `make check-full` and resolve every required failure; ordinary
+   `make check` and `make ci` are bounded development routes, not full release
+   qualification.
 4. Run `golib release check` and review its release metadata result.
 5. Merge the release preparation through normal review.
 6. Create and push an annotated `vMAJOR.MINOR.PATCH` tag from the verified
