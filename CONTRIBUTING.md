@@ -45,7 +45,7 @@ GOWORK=off go test . -run '^$' -fuzz '^FuzzClientCorrelation$' -fuzztime=2s
 
 Select the native fuzz target affected by your change; ordinary tests already
 exercise deterministic fuzz seeds. For shared checks, install the public
-`golib` v2.1.1 release declared in `.golib.yaml` and verify its checksums:
+`golib` v2.4.0 release declared in `.golib.yaml` and verify its checksums:
 
 ```bash
 make check
@@ -108,3 +108,13 @@ Follow [repository structure policy](AGENTS.md#repository-structure). New module
 require an explicit purpose, ownership boundary, dependency review, package
 catalog entry, full quality gates, documentation, changelog, license, security
 policy, compatibility plan, and release dry-run.
+
+## Source Documentation
+
+Install the public `golib` v2.4.0 verifier declared in `.golib.yaml` and
+validate its declared checksum before repository checks. Run
+`make source-docs-check` for the tracked-source documentation contract.
+`make check`, `make check-full` and `make ci` require the same strict check.
+Required CI also checks all tracked source, including inactive build variants.
+Manual-review findings stay visible; structural success does not certify prose
+truth, specification conformance or generator reproducibility.
