@@ -87,8 +87,9 @@ exported as `CodeRequestLimitExceeded`, `CodeParseError`, `CodeInvalidRequest`,
 - `Call[T]` is the typed result helper.
 - `BatchCall` holds `Method`, `Params`, `Result`, and `Notification`. After a
   valid response, its `Error` holds any per-call RPC failure.
-- `IDGenerator` supplies request IDs. `AtomicIDGenerator` creates monotonic
-  numeric IDs; `WithIDGenerator` installs a custom strategy.
+- `IDGenerator` supplies request IDs. `AtomicIDGenerator` increments
+  numeric int64 IDs with wraparound, not an unlimited monotonic guarantee;
+  `WithIDGenerator` installs a custom strategy.
 - Client validation sentinels are `ErrTransport`, `ErrInvalidResponse`,
   `ErrMismatchedID`, `ErrUnexpectedResponse`, `ErrMissingResponse`,
   `ErrDuplicateResponse`, `ErrDuplicateRequestID`,
@@ -99,7 +100,8 @@ exported as `CodeRequestLimitExceeded`, `CodeParseError`, `CodeInvalidRequest`,
 - `NewHTTPHandler` adapts a dispatcher to `http.Handler`.
   `WithMaxRequestBytes` changes its four-megabyte default request limit.
 - `IsJSONContentType` recognizes `application/json`,
-  `application/json-rpc`, and `application/*+json`, including parameters.
+  `application/json-rpc`, and any valid media type ending in `+json`, including
+  parameters. The suffix predicate does not restrict the top-level media type.
 - `NewHTTPTransport` validates an HTTP(S) endpoint without URL user information
   and returns a client transport. `WithHTTPClient`, `WithHTTPHeader`, and
   `WithMaxResponseBytes` configure it. `WithHTTPDiagnosticPreviewBytes`
@@ -148,12 +150,14 @@ therefore invoke them concurrently. They must honor the supplied context,
 avoid unbounded blocking, and provide their own synchronization. Middleware
 constructors are applied for each method execution. Hook panics are contained.
 `OnRequest` may return a derived context; nil falls back to the original
-context. Hook request and response arguments are observation values whose
-mutation cannot change the protocol result and should be copied before
-retention.
+context. `OnRequest` gets copied request buffers and `OnResponse` gets copied
+response buffers, but the latter's request and local cause remain borrowed.
+Treat borrowed data as read-only and copy before retention; mutating/re-decoding
+a request ID can alter shared response ID bytes. Returning an unrelated context
+from `OnRequest` can drop caller cancellation because it is not constrained.
 
-`Batch` resets `Error` on every `BatchCall`, assigns internal correlation state
-on non-notifications, and may decode into the value referenced by `Result`.
+While building a batch, `Batch` resets each visited call's `Error` and assigns
+internal correlation state on non-notifications, and may decode into the value referenced by `Result`.
 Callers must not share a `BatchCall` or its result target across concurrent
 calls.
 

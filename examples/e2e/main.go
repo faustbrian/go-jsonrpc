@@ -1,3 +1,4 @@
+// Package main demonstrates an owned in-process HTTP server and JSON-RPC client.
 package main
 
 import (

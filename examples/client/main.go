@@ -1,3 +1,4 @@
+// Package main demonstrates a JSON-RPC call to the separately run example server.
 package main
 
 import (

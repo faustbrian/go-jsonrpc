@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Documentation
+
+- Clarify raw ID/message ownership, separate decoding and validation, borrowed
+  hook/transport lifetimes, partial batch results and generator wraparound.
+  Executable examples now handle call and per-member errors.
+- Reconcile current JSONRPC-DEC-010 wording with the actual `+json` media-type
+  predicate. Source contracts state that response-hook requests remain borrowed
+  and must be read-only; neither clarification changes runtime enforcement.
+
 ## [1.1.2] - 2026-10-07
 
 ### Changed

@@ -37,6 +37,15 @@ correlation and error handling.
 | Unauthorized method execution | Protocol validation occurs before dispatch | Authenticate, authorize each method, and validate business inputs |
 | Callback blocking or excessive callback allocation | Context is propagated; panics are contained | Handlers and other callbacks must honor cancellation and enforce their own CPU, memory, I/O, and concurrency budgets |
 
+Response-hook requests and local causes remain borrowed. Response fields/raw
+buffers are copied for observation, but re-decoding the request ID can mutate
+storage shared with wire response IDs. Treat borrowed callback arguments as
+read-only and make independent copies before retention. Hook panic recovery is
+not blanket mutation isolation or redaction of local diagnostic causes.
+The JSON media-type predicate accepts any parsed `+json` suffix, not only
+`application/*+json`; deployments needing a narrower allowlist must apply it
+before the handler.
+
 ## Accepted residual risks and non-goals
 
 | Risk | Owner | Rationale | Mitigation | Review condition |

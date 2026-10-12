@@ -31,6 +31,7 @@ Use this index to choose the shortest path from evaluation to production.
 
 ## Maintainers
 
+- [Source documentation audit](source-documentation-audit.md)
 - [Repository standards](repository-standards.md)
 - [Contributing](../CONTRIBUTING.md)
 - [Support](../SUPPORT.md)

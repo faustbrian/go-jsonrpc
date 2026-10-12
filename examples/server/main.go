@@ -1,3 +1,4 @@
+// Package main demonstrates a JSON-RPC HTTP server with caller-owned timeouts.
 package main
 
 import (

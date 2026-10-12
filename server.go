@@ -17,8 +17,11 @@ import (
 // Registration errors identify reserved method names, duplicate methods, and
 // nil handlers.
 var (
-	ErrInvalidMethodName        = errors.New("jsonrpc: invalid method name")
-	ErrMethodAlreadyRegistered  = errors.New("jsonrpc: method already registered")
+	// ErrInvalidMethodName identifies rpc. application registration or non-rpc. system registration.
+	ErrInvalidMethodName = errors.New("jsonrpc: invalid method name")
+	// ErrMethodAlreadyRegistered identifies an attempt to replace an existing registry name.
+	ErrMethodAlreadyRegistered = errors.New("jsonrpc: method already registered")
+	// ErrNilHandler identifies registration without a callable handler.
 	ErrNilHandler               = errors.New("jsonrpc: nil handler")
 	errDispatchResponseTooLarge = errors.New("jsonrpc: dispatch response too large")
 	parameterNames              sync.Map
@@ -31,31 +34,52 @@ const (
 	defaultMaxNestingDepth                = 10_000
 )
 
-// Handler implements one JSON-RPC method.
+// Handler implements one JSON-RPC method synchronously. Params is borrowed for
+// the invocation; copy bytes before retaining or mutating them. Handlers own
+// cooperative cancellation, authorization, replay safety and bounded returned
+// values/custom marshaling. Concurrent dispatch may invoke a handler concurrently.
 type Handler func(context.Context, json.RawMessage) (any, error)
 
-// Middleware wraps a Handler with cross-cutting behavior.
+// Middleware wraps a Handler with cross-cutting behavior. Its constructor runs
+// for each method execution, outside registry locks, in reverse wrapping order.
+// Both it and its returned handler must support the caller's concurrency; neither
+// gets automatic timeouts or bounded recursion from Dispatcher.
 type Middleware func(Handler) Handler
 
-// ErrorMapper converts an application error into safe public JSON-RPC data.
+// ErrorMapper converts an ordinary application error into public JSON-RPC data.
+// It runs synchronously, may be invoked concurrently and owns the public message/
+// data disclosure policy. Dispatcher contains its panic or invalid/nil result;
+// a directly returned or wrapped *Error bypasses this mapper.
 type ErrorMapper func(error) *Error
 
 // Hooks observe the complete dispatcher lifecycle, including protocol errors
 // that occur before a Handler or Middleware can run. A nil Request represents
 // an unparseable or invalid request. Notifications provide an internal outcome
 // to OnResponse even though that response is never placed on the wire.
+// Callbacks run synchronously without registry locks and may run concurrently
+// across dispatches. Panics are contained, not blocking or unbounded work.
 type Hooks struct {
 	// OnRequest observes a copied validated request or nil for an invalid
 	// envelope and may return a derived context for subsequent processing.
+	// Params/ID raw bytes are copied for this callback. Nil or panic preserves ctx;
+	// any other returned context is used without enforcing the original deadline.
+	// Derive it from ctx to preserve cancellation and caller context values.
 	OnRequest func(context.Context, *Request) context.Context
-	// OnResponse observes a copied internal outcome, including notifications.
+	// OnResponse observes copied response fields/raw buffers, including notification
+	// outcomes, before final wire encoding. Request is borrowed, not copied: treat
+	// it and its ID/Params storage as read-only. Mutating/re-decoding Request.ID can
+	// alter shared response ID bytes. A local Error cause also remains borrowed
+	// and may carry sensitive error or panic-stack data. Copy before retention.
+	// Observed outcomes may differ from final aggregate/encoding-limit fallbacks.
 	OnResponse func(context.Context, *Request, *Response)
 }
 
 type requestContextKey struct{}
 
 // RequestFromContext returns the validated request made available to the
-// active middleware or handler.
+// active middleware or handler. ctx must be nonnil. The returned value is a
+// shallow copy sharing Params and ID storage; treat it as read-only and create
+// independent copies before retention or mutation.
 func RequestFromContext(ctx context.Context) (Request, bool) {
 	request, ok := ctx.Value(requestContextKey{}).(Request)
 	return request, ok
@@ -72,7 +96,9 @@ type Registry struct {
 func NewRegistry() *Registry { return &Registry{methods: make(map[string]Handler)} }
 
 // Register adds handler under name. Names beginning with rpc. are reserved,
-// and an existing name cannot be replaced.
+// and an existing name cannot be replaced. Empty application names are valid.
+// The registry borrows the function/captured state; it does not run the handler
+// under its lock or provide synchronization for that state.
 func (r *Registry) Register(name string, handler Handler) error {
 	if strings.HasPrefix(name, "rpc.") {
 		return ErrInvalidMethodName
@@ -106,7 +132,8 @@ func (r *Registry) register(name string, handler Handler) error {
 	return nil
 }
 
-// Lookup returns the handler registered under name.
+// Lookup returns the borrowed handler under name after releasing the registry
+// read lock. The caller owns its invocation and any captured mutable state.
 func (r *Registry) Lookup(name string) (Handler, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -117,7 +144,8 @@ func (r *Registry) Lookup(name string) (Handler, bool) {
 // DispatcherOption configures a Dispatcher during construction.
 type DispatcherOption func(*Dispatcher)
 
-// WithMiddleware appends middleware in outermost-to-innermost order.
+// WithMiddleware appends function values in outermost-to-innermost order when
+// the option runs. Captured state is not cloned; nil entries are skipped at execution.
 func WithMiddleware(middleware ...Middleware) DispatcherOption {
 	return func(dispatcher *Dispatcher) {
 		dispatcher.middleware = append(dispatcher.middleware, middleware...)
@@ -131,12 +159,14 @@ func WithErrorMapper(mapper ErrorMapper) DispatcherOption {
 }
 
 // WithHooks installs lifecycle observers. Hook panics are contained and hook
-// mutations cannot change protocol output.
+// response fields are copied, but OnResponse's request/cause are borrowed and
+// must be treated as read-only to avoid changing shared state or wire IDs.
 func WithHooks(hooks Hooks) DispatcherOption {
 	return func(dispatcher *Dispatcher) { dispatcher.hooks = hooks }
 }
 
 // WithMaxDispatchBytes changes the dispatcher's four-MiB payload limit.
+// Non-positive values leave the existing bound unchanged.
 func WithMaxDispatchBytes(limit int64) DispatcherOption {
 	return func(dispatcher *Dispatcher) {
 		if limit > 0 {
@@ -147,7 +177,9 @@ func WithMaxDispatchBytes(limit int64) DispatcherOption {
 
 // WithMaxDispatchResponseBytes changes the dispatcher's four-MiB encoded
 // response limit. Values smaller than the minimal protocol error use that
-// minimal size so a valid bounded failure can still be returned.
+// minimal size so a valid bounded failure can still be returned. Non-positive
+// values leave the limit unchanged. Encoding can allocate before this check;
+// callers must bound handler values and custom marshaling (JSONRPC-DEC-011).
 func WithMaxDispatchResponseBytes(limit int64) DispatcherOption {
 	return func(dispatcher *Dispatcher) {
 		if limit <= 0 {
@@ -159,6 +191,7 @@ func WithMaxDispatchResponseBytes(limit int64) DispatcherOption {
 }
 
 // WithMaxBatchItems changes the dispatcher's default limit of 1,024 members.
+// Non-positive values leave the existing bound unchanged.
 func WithMaxBatchItems(limit int) DispatcherOption {
 	return func(dispatcher *Dispatcher) {
 		if limit > 0 {
@@ -169,7 +202,8 @@ func WithMaxBatchItems(limit int) DispatcherOption {
 
 // WithMaxNestingDepth changes the maximum number of nested JSON arrays and
 // objects accepted before dispatch. The default matches encoding/json's
-// built-in maximum depth of 10,000.
+// built-in maximum depth of 10,000. Non-positive values leave the bound
+// unchanged; raising it does not raise the standard JSON parser's own ceiling.
 func WithMaxNestingDepth(limit int) DispatcherOption {
 	return func(dispatcher *Dispatcher) {
 		if limit > 0 {
@@ -180,7 +214,9 @@ func WithMaxNestingDepth(limit int) DispatcherOption {
 
 // Dispatcher validates and executes JSON-RPC requests and batches. Its
 // configuration is immutable after construction; its Registry may be updated
-// concurrently.
+// concurrently. Use NewDispatcher; the zero value is not ready for dispatch.
+// It borrows the registry and callback state, which must be concurrency-safe.
+// Options are construction-only; do not mutate configuration after publication.
 type Dispatcher struct {
 	registry         *Registry
 	middleware       []Middleware
@@ -218,7 +254,16 @@ func NewDispatcher(registry *Registry, options ...DispatcherOption) *Dispatcher 
 
 // Dispatch processes one JSON-RPC message. The boolean reports whether the
 // caller must send the returned response; notifications intentionally return
-// no response.
+// no response for valid notifications, even on handler failure. Invalid id-less
+// envelopes still return null-ID errors (JSONRPC-DEC-001); explicit null IDs are
+// requests (JSONRPC-DEC-002). ctx must be nonnil; cancellation is propagated to
+// callbacks, not preflight admission or forced preemption.
+//
+// Payload is borrowed for this synchronous call; returned bytes are caller-owned.
+// Batches currently execute sequentially, but ordering is not a public guarantee
+// (JSONRPC-DEC-006). Aggregate response overflow still runs remaining handlers
+// and returns one null-ID internal-error member, so side effects may complete
+// without correlated outcomes (JSONRPC-DEC-011); do not blindly retry.
 //
 // Notification and batch behavior follow:
 //   - https://www.jsonrpc.org/specification#notification
@@ -254,7 +299,11 @@ func (d *Dispatcher) Dispatch(ctx context.Context, payload []byte) ([]byte, bool
 }
 
 // DispatchSingle processes one non-batch JSON-RPC message and returns its
-// typed response before wire encoding. The boolean is false for notifications.
+// typed response before final wire encoding. The boolean is false for valid
+// notifications, which return a zero Response; batches return Invalid Request.
+// ctx/payload ownership and cancellation match Dispatch. Result shaping still
+// encodes to enforce the response-size bound; this is not a zero-encoding API.
+// The returned Response can retain a handler-owned Error/cause, not a deep copy.
 func (d *Dispatcher) DispatchSingle(
 	ctx context.Context,
 	payload []byte,
@@ -538,7 +587,12 @@ func (d *Dispatcher) marshalResponse(response Response) []byte {
 }
 
 // DecodeParams strictly decodes params as T. Duplicate or unknown named
-// members, malformed JSON, and trailing data return InvalidParams.
+// members, invalid UTF-8, malformed JSON and trailing data return InvalidParams.
+// Exact top-level field names apply when T is a struct (including pointer forms);
+// nested field case matching and custom unmarshaling retain encoding/json rules.
+// Duplicate object names are rejected at every depth (JSONRPC-DEC-008).
+// Direct callers must bound params before parsing. On error T may be partially
+// decoded; use it only after checking the returned protocol error.
 func DecodeParams[T any](params json.RawMessage) (T, *Error) {
 	var value T
 	trimmed := bytes.TrimSpace(params)

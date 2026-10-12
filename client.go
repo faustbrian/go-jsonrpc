@@ -15,15 +15,25 @@ import (
 // Client errors identify transport, envelope, correlation, batch, and size
 // failures and support errors.Is through direct return or wrapping.
 var (
-	ErrTransport              = errors.New("jsonrpc: transport error")
-	ErrInvalidResponse        = errors.New("jsonrpc: invalid response")
-	ErrMismatchedID           = errors.New("jsonrpc: mismatched response id")
-	ErrUnexpectedResponse     = errors.New("jsonrpc: unexpected response")
-	ErrMissingResponse        = errors.New("jsonrpc: missing batch response")
-	ErrDuplicateResponse      = errors.New("jsonrpc: duplicate batch response")
-	ErrDuplicateRequestID     = errors.New("jsonrpc: duplicate batch request id")
-	ErrEmptyBatch             = errors.New("jsonrpc: empty client batch")
-	ErrClientBatchTooLarge    = errors.New("jsonrpc: client batch too large")
+	// ErrTransport identifies a missing transport or a failure returned by it.
+	ErrTransport = errors.New("jsonrpc: transport error")
+	// ErrInvalidResponse identifies malformed envelopes or failed result decoding.
+	ErrInvalidResponse = errors.New("jsonrpc: invalid response")
+	// ErrMismatchedID identifies a response ID not matching a pending request.
+	ErrMismatchedID = errors.New("jsonrpc: mismatched response id")
+	// ErrUnexpectedResponse identifies notification replies or excess batch reply members.
+	ErrUnexpectedResponse = errors.New("jsonrpc: unexpected response")
+	// ErrMissingResponse identifies an incomplete set of batch responses.
+	ErrMissingResponse = errors.New("jsonrpc: missing batch response")
+	// ErrDuplicateResponse identifies repeated response IDs within a batch.
+	ErrDuplicateResponse = errors.New("jsonrpc: duplicate batch response")
+	// ErrDuplicateRequestID identifies ambiguous generated request IDs before batch transport.
+	ErrDuplicateRequestID = errors.New("jsonrpc: duplicate batch request id")
+	// ErrEmptyBatch identifies a client batch with no calls.
+	ErrEmptyBatch = errors.New("jsonrpc: empty client batch")
+	// ErrClientBatchTooLarge identifies a call count above the client batch bound.
+	ErrClientBatchTooLarge = errors.New("jsonrpc: client batch too large")
+	// ErrClientResponseTooLarge identifies a reply above the client parsing byte bound.
 	ErrClientResponseTooLarge = errors.New("jsonrpc: client response too large")
 )
 
@@ -34,6 +44,10 @@ const (
 
 // Transport exchanges one complete JSON-RPC payload with a peer.
 type Transport interface {
+	// RoundTrip synchronously exchanges payload using the supplied context.
+	// Implementations own cancellation and acquisition bounds; Client checks reply
+	// size only after return. Treat payload as borrowed until return, and return
+	// reply bytes safe for the caller to inspect without concurrent mutation.
 	RoundTrip(context.Context, []byte) ([]byte, error)
 }
 
@@ -47,14 +61,19 @@ func (function TransportFunc) RoundTrip(ctx context.Context, payload []byte) ([]
 
 // IDGenerator supplies request IDs to a Client.
 type IDGenerator interface {
+	// NextID returns a valid non-missing ID for correlation. Client calls may invoke
+	// it concurrently; a custom implementation must synchronize its own state.
+	// Duplicate generated IDs within a batch are rejected before transport.
 	NextID() ID
 }
 
-// AtomicIDGenerator generates concurrency-safe, monotonically increasing
-// numeric IDs.
+// AtomicIDGenerator generates concurrency-safe numeric IDs by int64 increments.
+// Its zero value starts at 1. It must not be copied after use; arithmetic wraps
+// at int64 overflow, so it is not an unlimited monotonic or unique-ID guarantee.
 type AtomicIDGenerator struct{ value atomic.Int64 }
 
-// NewAtomicIDGenerator creates a generator whose first ID is start+1.
+// NewAtomicIDGenerator creates a generator whose first ID is start+1 using
+// wrapping int64 arithmetic.
 func NewAtomicIDGenerator(start int64) *AtomicIDGenerator {
 	generator := &AtomicIDGenerator{}
 	generator.value.Store(start)
@@ -69,7 +88,9 @@ func (generator *AtomicIDGenerator) NextID() ID {
 // ClientOption configures a Client during construction.
 type ClientOption func(*Client)
 
-// WithIDGenerator installs a non-nil request ID generator.
+// WithIDGenerator borrows a non-nil request ID generator; nil leaves the
+// existing generator unchanged. Typed-nil implementations are not filtered and
+// must not be supplied. It does not validate future IDs in advance.
 func WithIDGenerator(generator IDGenerator) ClientOption {
 	return func(client *Client) {
 		if generator != nil {
@@ -78,7 +99,9 @@ func WithIDGenerator(generator IDGenerator) ClientOption {
 	}
 }
 
-// WithMaxClientResponseBytes changes the client's four-MiB reply parsing limit.
+// WithMaxClientResponseBytes changes the four-MiB parsing limit for positive
+// values. Non-positive values leave it unchanged. Transport acquisition occurs
+// before this check and needs its own bounds.
 func WithMaxClientResponseBytes(limit int64) ClientOption {
 	return func(client *Client) {
 		if limit > 0 {
@@ -88,7 +111,8 @@ func WithMaxClientResponseBytes(limit int64) ClientOption {
 }
 
 // WithMaxClientBatchItems changes the default limit of 1,024 calls sent and
-// response members inspected for one client batch.
+// response members inspected for one client batch. Non-positive values leave
+// the existing bound unchanged.
 func WithMaxClientBatchItems(limit int) ClientOption {
 	return func(client *Client) {
 		if limit > 0 {
@@ -100,6 +124,8 @@ func WithMaxClientBatchItems(limit int) ClientOption {
 // Client validates requests and correlates responses over a Transport. Its
 // default AtomicIDGenerator is safe for concurrent calls; custom transports,
 // generators, and BatchCall values retain their own concurrency contracts.
+// Construct it with NewClient; the zero value is not ready for calls. The client
+// borrows collaborators, performs no automatic retries and does not close them.
 type Client struct {
 	transport        Transport
 	ids              IDGenerator
@@ -125,7 +151,11 @@ func NewClient(transport Transport, options ...ClientOption) *Client {
 }
 
 // Call sends one request, validates and correlates its response, and decodes a
-// successful result into result when result is non-nil.
+// successful result into result when result is non-nil. The target must be a
+// suitable json.Unmarshal destination and is caller-owned; decoding errors may
+// leave it partially updated. A valid peer failure is returned as *Error; other
+// failures preserve their category/causes. The transport enforces cancellation;
+// Client does not preflight ctx.Err or impose a separate deadline.
 func (client *Client) Call(ctx context.Context, method string, params, result any) error {
 	request, err := NewRequest(method, params, client.ids.NextID())
 	if err != nil {
@@ -158,14 +188,17 @@ func (client *Client) Call(ctx context.Context, method string, params, result an
 	return nil
 }
 
-// Call sends one request and returns its result decoded as T.
+// Call sends one request through a constructed, non-nil client and decodes T.
+// On failure the returned value may contain partial decoding; consult the error.
 func Call[T any](ctx context.Context, client *Client, method string, params any) (T, error) {
 	var result T
 	err := client.Call(ctx, method, params, &result)
 	return result, err
 }
 
-// Notify sends a notification and requires the peer to return no payload.
+// Notify sends a notification and requires an empty or whitespace-only reply.
+// Success proves transport acceptance, not remote method completion. JSON-RPC
+// notifications have no correlated outcome; callers own replay/observability.
 func (client *Client) Notify(ctx context.Context, method string, params any) error {
 	request, err := NewNotification(method, params)
 	if err != nil {
@@ -183,17 +216,20 @@ func (client *Client) Notify(ctx context.Context, method string, params any) err
 }
 
 // BatchCall describes one member of a client batch. Batch writes a decoded
-// success into Result and assigns a protocol failure to Error.
+// success into Result and assigns a protocol failure to Error. These fields and
+// internal correlation state are mutated; do not share calls or result targets
+// concurrently. Earlier members may be updated even if Batch later returns an error.
 type BatchCall struct {
 	// Method is the JSON-RPC method name.
 	Method string
 	// Params must encode as an object or array when non-nil.
 	Params any
-	// Result receives a successful response when non-nil.
+	// Result is a caller-owned json.Unmarshal destination for success, when non-nil.
 	Result any
 	// Notification omits the request ID and expects no response member.
 	Notification bool
-	// Error receives a valid JSON-RPC failure response.
+	// Error receives a per-call protocol failure and is reset as the batch is built.
+	// A nil Batch error does not mean every call succeeded; inspect each Error.
 	Error *Error
 
 	id ID
@@ -201,7 +237,10 @@ type BatchCall struct {
 
 // Batch sends calls together and correlates every non-notification response by
 // ID. It rejects empty batches, nil calls, duplicate generated IDs, and
-// malformed response membership.
+// malformed response membership. Replies may arrive in any order. Valid per-call
+// protocol failures populate BatchCall.Error without making Batch itself fail;
+// envelope/transport/decoding failures return an error. Result mutation is not
+// transactional and is not rolled back when a later reply fails validation.
 func (client *Client) Batch(ctx context.Context, calls ...*BatchCall) error {
 	if len(calls) == 0 {
 		return ErrEmptyBatch
@@ -329,7 +368,11 @@ func (client *Client) roundTrip(ctx context.Context, payload []byte) ([]byte, er
 	return reply, nil
 }
 
-// NewRequest constructs a validated request with an explicit non-missing ID.
+// NewRequest validates a non-missing ID and rejects reserved rpc. application
+// method names (empty names are permitted). Nil params omit the member; nonnil
+// params must JSON-encode as an object or array. Encoding allocates owned Params;
+// the supplied ID is a value copy sharing its raw storage. Explicit NullID is
+// accepted as a request per JSONRPC-DEC-002, not treated as a notification.
 func NewRequest(method string, params any, id ID) (Request, error) {
 	if err := validateClientMethod(method); err != nil {
 		return Request{}, err
@@ -347,7 +390,8 @@ func NewRequest(method string, params any, id ID) (Request, error) {
 	return Request{JSONRPC: Version, Method: method, Params: encoded, ID: id, idSet: true, methodSet: true}, nil
 }
 
-// NewNotification constructs a validated request without an ID.
+// NewNotification validates method/params as NewRequest does, omits the ID
+// member and therefore cannot receive a correlated protocol response.
 func NewNotification(method string, params any) (Request, error) {
 	if err := validateClientMethod(method); err != nil {
 		return Request{}, err

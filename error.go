@@ -23,15 +23,18 @@ const (
 	CodeInternalError = -32603
 )
 
-// Error is a JSON-RPC error object. Cause is retained locally and is never
-// serialized, allowing callers to preserve diagnostic context safely.
+// Error is a mutable JSON-RPC error object. Message and Data are public wire
+// content, not sanitized secrets. WithCause retains an unredacted local error
+// exposed by Unwrap but excluded from JSON serialization. Do not share mutable
+// errors across concurrent calls; even copies share Data and the cause.
 // See https://www.jsonrpc.org/specification#error_object.
 type Error struct {
 	// Code is the integer JSON-RPC error code.
 	Code int `json:"code"`
 	// Message is the public error description.
 	Message string `json:"message"`
-	// Data contains optional public JSON details.
+	// Data contains optional public JSON details. Direct assignments borrow the
+	// supplied slice; use WithData to encode a new owned buffer.
 	Data       json.RawMessage `json:"data,omitempty"`
 	cause      error
 	codeSet    bool
@@ -40,12 +43,17 @@ type Error struct {
 }
 
 // NewError constructs a JSON-RPC error with code and public message. Application
-// codes should avoid the protocol-reserved range -32768 through -32000.
+// codes should avoid the protocol-reserved range -32768 through -32000. This
+// constructor preserves code/message without enforcing that range or redacting them.
 func NewError(code int, message string) *Error {
 	return &Error{Code: code, Message: message, codeSet: true, messageSet: true}
 }
 
-// UnmarshalJSON decodes a strict JSON-RPC error object.
+// UnmarshalJSON decodes error fields, rejecting invalid UTF-8, duplicate envelope
+// names and case variants of reserved names. Presence of code/message is checked
+// later by Response.Validate; successful decoding alone is not validation.
+// It clears old fields after preliminary decoding, but errors may leave partial
+// receiver state. Use a separate value when rollback/alias isolation is needed.
 func (e *Error) UnmarshalJSON(data []byte) error {
 	if err := rejectDuplicateMembers(data, "code", "message", "data"); err != nil {
 		return err
@@ -98,7 +106,8 @@ func (e *Error) Error() string {
 func (e *Error) Unwrap() error { return e.cause }
 
 // WithData JSON-encodes public error details. An encoding failure clears Data
-// and is retained as the local cause.
+// and is retained as the local cause. It mutates and returns the same receiver;
+// successful encoding replaces Data but does not clear a previous cause.
 func (e *Error) WithData(value any) *Error {
 	data, err := json.Marshal(value)
 	if err != nil {
@@ -109,7 +118,8 @@ func (e *Error) WithData(value any) *Error {
 	return e
 }
 
-// WithCause retains a local cause without exposing it on the wire.
+// WithCause mutates and returns the receiver, borrowing cause without wire
+// serialization. Local inspection/formatting of the cause remains caller-owned.
 func (e *Error) WithCause(cause error) *Error {
 	e.cause = cause
 	return e

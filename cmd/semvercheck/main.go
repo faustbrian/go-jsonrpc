@@ -1,3 +1,4 @@
+// Package main provides the semvercheck release-tag validation and bump command.
 package main
 
 import (

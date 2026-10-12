@@ -1,3 +1,5 @@
+// Package main compares workspace JSON-RPC decisions with the pinned jrpc2 peer.
+// It is an engineering-only, non-releasable harness, not a production adapter.
 package main
 
 import (

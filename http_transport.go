@@ -17,8 +17,11 @@ import (
 // HTTP transport errors distinguish status, content-type, and body-limit
 // failures and support errors.Is through direct return or wrapping.
 var (
-	ErrHTTPStatus       = errors.New("jsonrpc: unexpected HTTP status")
-	ErrHTTPContentType  = errors.New("jsonrpc: invalid HTTP response content type")
+	// ErrHTTPStatus identifies a non-200, non-204 response after bounded body acquisition.
+	ErrHTTPStatus = errors.New("jsonrpc: unexpected HTTP status")
+	// ErrHTTPContentType identifies an unsupported content type on an HTTP 200 reply.
+	ErrHTTPContentType = errors.New("jsonrpc: invalid HTTP response content type")
+	// ErrResponseTooLarge identifies an HTTP reply body above the acquisition limit.
 	ErrResponseTooLarge = errors.New("jsonrpc: HTTP response too large")
 )
 
@@ -47,7 +50,8 @@ type httpRequestError struct{ cause error }
 // Error returns a credential-safe request-failure description.
 func (*httpRequestError) Error() string { return "jsonrpc: HTTP request failed" }
 
-// Unwrap preserves programmatic inspection of the transport failure.
+// Unwrap exposes the original transport failure, which may contain an endpoint
+// or other sensitive data even though Error omits it.
 func (err *httpRequestError) Unwrap() error { return err.cause }
 
 // HTTPStatusError reports a non-200 HTTP response. Body is empty by default and
@@ -73,7 +77,8 @@ func (err *HTTPStatusError) Unwrap() error { return ErrHTTPStatus }
 type HTTPTransportOption func(*HTTPTransport)
 
 // WithHTTPClient installs a non-nil HTTP client. Its timeout, redirect, proxy,
-// DNS, and dial policies remain caller-owned.
+// DNS, and dial policies remain caller-owned. The client is borrowed, not
+// cloned or closed; nil leaves the existing client unchanged.
 func WithHTTPClient(client *http.Client) HTTPTransportOption {
 	return func(transport *HTTPTransport) {
 		switch client {
@@ -90,7 +95,8 @@ func WithHTTPHeader(name, value string) HTTPTransportOption {
 	return func(transport *HTTPTransport) { transport.headers.Set(name, value) }
 }
 
-// WithMaxResponseBytes changes the default four-MiB HTTP response-body limit.
+// WithMaxResponseBytes changes the four-MiB HTTP acquisition limit for positive
+// values; non-positive values leave it unchanged. Client parsing has its own limit.
 func WithMaxResponseBytes(limit int64) HTTPTransportOption {
 	return func(transport *HTTPTransport) {
 		if limit > 0 {
@@ -101,7 +107,8 @@ func WithMaxResponseBytes(limit int64) HTTPTransportOption {
 
 // WithHTTPDiagnosticPreviewBytes opts into retaining up to limit bytes of a
 // non-success response body in HTTPStatusError.Body. Values above four KiB are
-// clamped to four KiB. The preview remains untrusted and Error never prints it.
+// clamped to four KiB. Non-positive values leave an existing preview setting
+// unchanged. Control sanitation is not secret redaction; Error never prints Body.
 func WithHTTPDiagnosticPreviewBytes(limit int64) HTTPTransportOption {
 	return func(transport *HTTPTransport) {
 		if limit > 0 {
@@ -110,7 +117,10 @@ func WithHTTPDiagnosticPreviewBytes(limit int64) HTTPTransportOption {
 	}
 }
 
-// HTTPTransport exchanges JSON-RPC payloads over HTTP POST.
+// HTTPTransport exchanges JSON-RPC payloads over HTTP POST. Construct it with
+// NewHTTPTransport; the zero value is not usable. Concurrent RoundTrip calls are
+// supported with a concurrency-safe borrowed client and construction-only options.
+// It starts no owned background worker and does not close client idle connections.
 type HTTPTransport struct {
 	endpoint           string
 	client             *http.Client
@@ -121,7 +131,9 @@ type HTTPTransport struct {
 
 // NewHTTPTransport validates an HTTP(S) endpoint without URL user information
 // and constructs a transport. The default client has a 30-second timeout and
-// does not follow redirects. Nil options are ignored.
+// does not follow redirects or use environment proxies. Nil options are ignored.
+// HTTP(S), loopback/private destinations and query strings are allowed; endpoint
+// validation is not SSRF protection. Callers own origin/DNS/TLS/egress policy.
 func NewHTTPTransport(endpoint string, options ...HTTPTransportOption) (*HTTPTransport, error) {
 	parsed, err := url.Parse(endpoint)
 	if err != nil || parsed.Host == "" || parsed.User != nil ||
@@ -145,7 +157,13 @@ func NewHTTPTransport(endpoint string, options ...HTTPTransportOption) (*HTTPTra
 }
 
 // RoundTrip posts payload and returns a bounded JSON response. A 204 response
-// returns a nil payload, and non-200 statuses return *HTTPStatusError.
+// returns nil without reading/validating a JSON body (JSONRPC-DEC-009); other
+// non-200 statuses return *HTTPStatusError after bounded body acquisition. Size
+// or read failures can precede status classification. A 200 response needs an
+// accepted content type, but envelope validation belongs to Client.
+// Payload is borrowed until return and returned body bytes are caller-owned.
+// Every received body is closed. Context cancellation and the configured HTTP
+// client bound network work; no retry or extra deadline is imposed here.
 func (transport *HTTPTransport) RoundTrip(ctx context.Context, payload []byte) ([]byte, error) {
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, transport.endpoint, bytes.NewReader(payload))
 	if err != nil {

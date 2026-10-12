@@ -28,7 +28,11 @@ const (
 	IDNull
 )
 
-// ID preserves the exact JSON representation of a string, number, or null ID.
+// ID preserves string, number or null wire spelling separately from correlation
+// identity. The zero value is missing, not explicit null. Copies share raw
+// storage: re-decoding a copied ID can change an alias's wire spelling, so treat
+// IDs borrowed from requests/context/hooks as read-only and decode into a fresh
+// value when independent ownership is needed.
 // See https://www.jsonrpc.org/specification#request_object.
 type ID struct {
 	kind      IDKind
@@ -45,19 +49,24 @@ func StringID(value string) ID {
 	return ID{kind: IDString, raw: raw, canonical: canonical}
 }
 
-// NumberID constructs a numeric ID while preserving value's wire spelling.
+// NumberID preserves value's wire spelling and exact-decimal correlation key.
+// It does not validate that value is valid JSON numeric syntax. NewRequest rejects
+// invalid IDs; direct users must supply valid numbers. JSONRPC-DEC-003 records
+// equivalence without binary floating-point conversion or exponent expansion.
 func NumberID(value json.Number) ID {
 	return ID{kind: IDNumber, raw: json.RawMessage(value.String()), canonical: canonicalNumber(value.String())}
 }
 
-// NullID constructs an explicit null ID.
+// NullID constructs explicit null, distinct from the missing zero-value ID.
+// JSONRPC-DEC-002 treats a present null request ID as requiring a response.
 func NullID() ID { return ID{kind: IDNull, raw: json.RawMessage("null")} }
 
 // Kind returns the ID's representation kind.
 func (id ID) Kind() IDKind { return id.kind }
 
 // Equal reports whether IDs have the same kind and value. Mathematically
-// equivalent numeric spellings compare equal.
+// equivalent valid numeric spellings compare equal; strings and numbers never
+// coerce to one another. Equal does not validate IDs.
 func (id ID) Equal(other ID) bool {
 	return id.kind == other.kind && id.canonical == other.canonical
 }
@@ -80,7 +89,8 @@ func (id ID) valid() bool {
 }
 
 // MarshalJSON preserves the ID's original JSON spelling. A missing ID marshals
-// as null when encoded outside a Request.
+// as null when encoded outside a Request. Returned bytes are an independent
+// copy; this method does not validate raw numeric syntax.
 func (id ID) MarshalJSON() ([]byte, error) {
 	if id.kind == IDMissing {
 		return []byte("null"), nil
@@ -89,7 +99,9 @@ func (id ID) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON decodes a string, number, or null ID without numeric precision
-// loss and rejects invalid UTF-8.
+// loss and rejects invalid UTF-8, non-ID types and trailing values. It copies
+// input bytes but may reuse receiver storage shared by prior ID value copies.
+// Standalone callers must bound input size; no dispatcher byte limit applies here.
 func (id *ID) UnmarshalJSON(data []byte) error {
 	if !utf8.Valid(data) {
 		return errors.New("jsonrpc: invalid UTF-8")
@@ -124,6 +136,9 @@ func (id *ID) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// Keep exponent arithmetic in decimal text: expanding its numeric value or
+// converting through float64 would lose correlation precision or amplify input.
+// JSONRPC-DEC-003 and TestDecimalExponentArithmetic cover this policy.
 func canonicalNumber(value string) string {
 	index := 0
 	numberSign := ""
@@ -280,13 +295,16 @@ func subtractDecimalMagnitudes(larger, smaller string) string {
 
 // Request represents the protocol's request object. Params, when present, must
 // follow https://www.jsonrpc.org/specification#parameter_structures.
+// UnmarshalJSON records presence; Validate separately checks the envelope.
+// Value copies share Params and ID raw storage; mutation requires caller ownership.
 // See https://www.jsonrpc.org/specification#request_object.
 type Request struct {
 	// JSONRPC must equal Version.
 	JSONRPC string `json:"jsonrpc"`
 	// Method is the case-sensitive method name.
 	Method string `json:"method"`
-	// Params contains an optional JSON object or array.
+	// Params contains an optional JSON object or array; literal assignments borrow
+	// the slice, while the JSON decoder and builders allocate their own bytes.
 	Params json.RawMessage `json:"params,omitempty"`
 	// ID identifies a request; it is missing for notifications.
 	ID        ID `json:"-"`
@@ -295,7 +313,10 @@ type Request struct {
 }
 
 // UnmarshalJSON decodes a request while preserving whether ID and method were
-// present and rejecting ambiguous protocol members.
+// present and rejecting invalid UTF-8, duplicate envelope names and case variants
+// of reserved names. Unknown extension names are allowed. Nested application data
+// keeps ordinary JSON behavior unless DecodeParams is used. Call Validate after
+// success; an error may leave the receiver partially changed.
 func (r *Request) UnmarshalJSON(data []byte) error {
 	if err := rejectDuplicateMembers(data, "jsonrpc", "method", "params", "id"); err != nil {
 		return err
@@ -328,7 +349,8 @@ func (r *Request) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// MarshalJSON encodes a request while preserving notification ID omission.
+// MarshalJSON encodes fields without calling Validate, preserving notification
+// ID omission. Invalid raw Params/ID can produce an encoding error.
 func (r Request) MarshalJSON() ([]byte, error) {
 	object := map[string]any{"jsonrpc": r.JSONRPC, "method": r.Method}
 	if r.Params != nil {
@@ -345,7 +367,9 @@ func (r Request) MarshalJSON() ([]byte, error) {
 func (r Request) IsNotification() bool { return !r.idSet && r.ID.Kind() == IDMissing }
 
 // Validate returns an InvalidRequest error when the request envelope violates
-// JSON-RPC 2.0.
+// JSON-RPC 2.0. This checks version, method presence and params shape, not
+// reserved-method registration policy or validity of a programmatically supplied
+// ID. NewRequest and UnmarshalJSON validate IDs at their respective boundaries.
 func (r Request) Validate() *Error {
 	if r.JSONRPC != Version || (!r.methodSet && r.Method == "") {
 		return InvalidRequest()
@@ -361,12 +385,16 @@ func (r Request) Validate() *Error {
 
 // Response represents the object defined by
 // https://www.jsonrpc.org/specification#response_object.
+// Result, Error.Data and ID raw buffers can be shared by copies. Hidden presence
+// state is set by decoding/dispatch; exported fields in a literal alone do not
+// satisfy Validate.
 type Response struct {
 	// JSONRPC must equal Version.
 	JSONRPC string `json:"jsonrpc"`
-	// Result contains the success value.
+	// Result contains raw success JSON, including an explicit null. Literal
+	// assignments borrow the slice; mutating it requires caller ownership.
 	Result json.RawMessage `json:"result,omitempty"`
-	// Error contains the failure object.
+	// Error contains the failure object; pointer copies retain that mutable object.
 	Error *Error `json:"error,omitempty"`
 	// ID correlates the response with its request.
 	ID        ID `json:"id"`
@@ -376,7 +404,10 @@ type Response struct {
 }
 
 // UnmarshalJSON decodes a response and records the presence of result, error,
-// and ID members for later validation.
+// and ID members for later validation. It rejects invalid UTF-8, duplicate/case
+// variants of reserved envelope names and malformed field representations, but
+// successful decoding does not guarantee a valid envelope. Errors may leave
+// partial receiver state; Validate checks completeness and exclusivity.
 func (r *Response) UnmarshalJSON(data []byte) error {
 	if err := rejectDuplicateMembers(data, "jsonrpc", "result", "error", "id"); err != nil {
 		return err
@@ -410,7 +441,9 @@ func (r *Response) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// MarshalJSON encodes exactly one result or error member.
+// MarshalJSON selects error when Error is nonnil or decoded error presence is
+// set; otherwise it encodes result, using null when Result is nil. It does not
+// call Validate or preserve an invalid result/error conflict.
 func (r Response) MarshalJSON() ([]byte, error) {
 	object := map[string]any{"jsonrpc": r.JSONRPC, "id": r.ID}
 	if r.Error != nil || r.errorSet {
@@ -425,7 +458,9 @@ func (r Response) MarshalJSON() ([]byte, error) {
 	return json.Marshal(object)
 }
 
-// Validate checks the version, ID, result/error exclusivity, and error shape.
+// Validate checks decoded/dispatcher presence state, version, non-missing ID,
+// result/error exclusivity and error shape. It is not a validator for arbitrary
+// Response literals whose hidden presence flags were never set.
 func (r Response) Validate() error {
 	if r.JSONRPC != Version || !r.idSet || r.ID.Kind() == IDMissing {
 		return errors.New("jsonrpc: invalid response envelope")

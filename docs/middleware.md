@@ -46,7 +46,11 @@ remaining lifecycle. A panic or nil return preserves the original context.
 `OnResponse` receives the active request and a copied response after execution,
 including the internal response for a notification. Treat callback arguments
 as borrowed for that invocation and copy any data that must be retained.
-Mutation cannot change the protocol response.
+The `OnResponse` request is borrowed and must be read-only: re-decoding its ID
+can mutate storage shared with the response ID. Only the supplied response
+fields/raw buffers are isolated; local error causes remain borrowed and may
+contain sensitive diagnostics. Returning an unrelated context from `OnRequest`
+can also drop caller cancellation; derive it from the supplied context.
 
 ## Ordering
 
