@@ -1,5 +1,7 @@
 # Performance
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 ## What To Measure
 
 Benchmark protocol decode, validation, dispatch, response encode, batch
@@ -30,3 +32,6 @@ ID detection, cancellation, or response correlation.
 The package does not define server concurrency or admission control. Measure
 the complete transport and handler stack under the expected method mix,
 payload distribution, and deadline policy.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

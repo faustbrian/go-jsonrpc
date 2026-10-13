@@ -1,5 +1,7 @@
 # Middleware, authentication, and observability
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 Dispatcher middleware wraps method execution without changing the transport.
 It is appropriate for RPC-aware authentication, authorization, logging,
 tracing, metrics, deadlines, and correlation. Ordinary `net/http` middleware
@@ -155,3 +157,6 @@ jsonrpc.WithErrorMapper(func(err error) *jsonrpc.Error {
 Handlers can return `*jsonrpc.Error` directly for expected public failures.
 Causes never serialize; `Data` does, so populate it only with deliberate public
 information.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

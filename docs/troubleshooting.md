@@ -1,5 +1,7 @@
 # Troubleshooting
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 Start by separating HTTP transport failures from JSON-RPC error objects. HTTP
 statuses other than 200 or 204 indicate the adapter or upstream rejected the
 exchange. A 200 response may contain either `result` or `error`.
@@ -110,3 +112,6 @@ may contain credentials that must not cross origins. Use the final JSON-RPC
 endpoint directly. If redirects are an intentional part of a trusted topology,
 pass an `http.Client` with an explicit `CheckRedirect` policy through
 `WithHTTPClient`.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

@@ -1,5 +1,7 @@
 # Scenario cookbook
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 ## Named parameters
 
 ```go
@@ -96,3 +98,6 @@ The HTTP transport attaches the supplied context to the request. The HTTP
 handler passes `request.Context()` into dispatch. Handlers and middleware must
 honor cancellation in their own I/O; the package cannot interrupt code that
 ignores context.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

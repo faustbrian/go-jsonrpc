@@ -1,5 +1,7 @@
 # Public API reference
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 This is the semantic reference for the active stable-v1 surface. Exact Go
 signatures are available from this checkout through `go doc .`.
 
@@ -172,3 +174,6 @@ pure Go, has no build tags or cgo, and requires Go 1.27.0 or later. Repository
 CI verifies exactly Go 1.27.2 on Ubuntu 24.04; other operating systems and
 architectures are source-portability expectations, not published tested
 platform claims.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

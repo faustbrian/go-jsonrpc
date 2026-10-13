@@ -1,5 +1,7 @@
 # Examples
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 ## HTTP Server
 
 Create a dispatcher, register methods with explicit request and result types,
@@ -27,3 +29,6 @@ order when collecting response-bearing results.
 Use the client API to allocate IDs and correlate out-of-order responses.
 Applications must set transport deadlines and decide whether a transport retry
 is safe for the invoked method.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

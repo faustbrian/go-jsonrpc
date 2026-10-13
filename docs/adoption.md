@@ -1,5 +1,7 @@
 # Production adoption guide
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 ## Stable v1 adoption
 
 The source tree uses the canonical `github.com/faustbrian/go-jsonrpc` module
@@ -93,3 +95,6 @@ transport failure and ensure methods are appropriately idempotent.
 - Public error data contains no internal or personal information.
 - Dashboards and alerts use bounded labels.
 - Rollout and Rollback owners know the switch mechanism.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

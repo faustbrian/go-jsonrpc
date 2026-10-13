@@ -1,5 +1,7 @@
 # FAQ
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 ## Is this tied to HTTP?
 
 No. `Dispatcher` and `Client` depend only on bytes, context, and the `Transport`
@@ -66,3 +68,6 @@ No. An ID member with `null` is still present and receives a response with a
 null ID. Omitting the ID member creates a notification. The specification
 discourages null request IDs because null is also used when an invalid request
 ID cannot be established.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

@@ -1,5 +1,7 @@
 # Compatibility policy
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 The project follows [Semantic Versioning](https://semver.org/) for tagged
 releases. Protocol behavior is compatibility-sensitive even where a Go type or
 function signature does not change.
@@ -70,3 +72,6 @@ Map key order, allocation counts, exact internal error causes, benchmark timing,
 and sequential batch execution are implementation details unless explicitly
 promoted to guarantees. Batch response order must never be relied upon because
 the JSON-RPC specification allows any order.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

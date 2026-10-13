@@ -1,5 +1,7 @@
 # Versioning and release guide
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 The active root source is stable v1. Do not create a major-path migration or
 publish a `/v2` module; releases use the canonical root module path.
 
@@ -41,3 +43,6 @@ go get github.com/faustbrian/go-jsonrpc@v1
 
 The package's public module identity, API baseline, conformance fixtures, and
 documentation must all refer to the same release.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

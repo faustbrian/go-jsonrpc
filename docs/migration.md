@@ -1,5 +1,7 @@
 # Migration
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 ## From Ad Hoc JSON-RPC Handlers
 
 1. Inventory method names, parameter shapes, notification behavior, and error
@@ -18,3 +20,6 @@ Read [CHANGELOG.md](../CHANGELOG.md) and [compatibility.md](compatibility.md)
 before upgrading. Breaking changes require a new major release.
 Never infer wire compatibility from compilation alone; replay representative
 requests and errors.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

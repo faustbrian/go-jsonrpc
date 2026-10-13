@@ -1,5 +1,7 @@
 # JSON-RPC 2.0 conformance matrix
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 This matrix maps every normative JSON-RPC 2.0 rule to implementation, test, and
 documentation evidence. The official
 [JSON-RPC 2.0 specification](https://www.jsonrpc.org/specification) is
@@ -83,3 +85,6 @@ Status meanings:
 
 - Re-run every baseline command after all fixes and record the final platform,
   tool versions, benchmark results, and any environmental limitation.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

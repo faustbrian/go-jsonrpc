@@ -1,5 +1,7 @@
 # Architecture
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 The package separates the protocol from every delivery mechanism. The normal
 server flow is:
 
@@ -110,3 +112,6 @@ track single, mixed, maximum, and rejected-batch allocations in CI artifacts.
 Numeric ID exponents are normalized with decimal-string addition and
 subtraction, avoiding arbitrary-precision integer parsing whose allocation
 count grew with attacker-controlled exponent digits.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

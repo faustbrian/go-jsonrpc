@@ -1,5 +1,7 @@
 # Source documentation audit
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 ## Scope and compact plan
 
 Tier A source documentation at main source
@@ -176,3 +178,6 @@ the existing local check/CI routes and Required aggregation. Release and
 selected security/assurance routes retain their existing controls. This
 structural status supplements the rendered semantic audit; it does not
 certify prose meaning, generator execution or runtime conformance.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

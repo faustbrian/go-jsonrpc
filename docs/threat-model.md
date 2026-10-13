@@ -1,5 +1,7 @@
 # Threat Model
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 ## Scope and assets
 
 This model covers the public JSON-RPC protocol types, dispatcher, client,
@@ -58,3 +60,6 @@ before the handler.
 | An explicitly enabled HTTP diagnostic preview can contain upstream secrets despite control-character sanitization. | Caller enabling the preview | The package cannot identify secrets in arbitrary peer text, while bounded diagnostics can aid controlled troubleshooting. | Leave previews disabled by default; restrict access and never send preview text to ordinary logs, traces, or user-facing errors. | Revisit when a structured caller-supplied redaction policy is available. |
 | Supplying `WithHTTPClient` or a custom `Transport` transfers network acquisition, proxy, redirect, timeout, TLS, DNS, and cancellation enforcement. | Caller supplying the component | Custom components are explicit extension points whose acquisition behavior is outside the client byte-slice boundary. | Configure finite deadlines and response acquisition bounds; audit redirect and proxy behavior before installation. | Revisit whenever the extension interfaces or transport ownership model changes. |
 | Released v1 consumers must receive the bounded hardening without a major-path split. | Maintainers and application integrators | Default diagnostics, proxy policy, request admission, and overflow responses are security-sensitive behavior on the canonical v1 path. | Preserve the stable module identity, document behavior changes, and verify each owned consumer against the exact candidate source before release. | Revisit when the next release changes transport or protocol policy. |
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

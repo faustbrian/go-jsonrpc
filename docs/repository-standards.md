@@ -1,5 +1,7 @@
 # Repository Standards
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 This repository follows the shared maintenance baseline used by the
 `faustbrian/go-*` OSS packages.
 
@@ -59,3 +61,6 @@ Code, dependencies, fuzz targets, benchmark inputs, and domain-specific
 security guidance are expected to differ. Shared policy wording and automation
 structure must not drift without updating this contract across all affected
 repositories.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

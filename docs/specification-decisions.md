@@ -1,5 +1,7 @@
 # JSON-RPC specification decisions
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 This register records observable choices where JSON-RPC 2.0, its examples, or
 its HTTP use leave more than one credible implementation. The
 [JSON-RPC 2.0 specification](https://www.jsonrpc.org/specification) is the
@@ -351,3 +353,6 @@ Authority URL: https://www.jsonrpc.org/specification
 No known material JSON-RPC 2.0 interpretation is unresolved at this revision.
 New ambiguities remain unresolved until they receive a stable identifier,
 normative analysis, executable evidence, and maintainer disposition here.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

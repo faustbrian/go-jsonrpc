@@ -1,5 +1,7 @@
 # Go Safety And Concurrency
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 Baseline: `GO-SAFETY-1`
 
 This document defines the shared safety engineering standard for the
@@ -144,3 +146,6 @@ be described as an equivalent type-system guarantee.
 - Updates to this baseline MUST bump its identifier and be propagated to the
   corresponding policy documents in `jsonapi`, `jsonrpc`, `queue`, `wire`,
   and `tabular`.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

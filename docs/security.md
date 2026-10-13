@@ -1,5 +1,7 @@
 # Security
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 ## Trust Boundary
 
 Treat request bodies, IDs, method names, parameters, batch members, remote
@@ -46,3 +48,6 @@ model](threat-model.md).
 Follow [SECURITY.md](../SECURITY.md) for private vulnerability reporting. The
 [conformance contract](conformance.md) records the maintained protocol and
 defensive-input behavior.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.

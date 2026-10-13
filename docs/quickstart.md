@@ -1,5 +1,7 @@
 # Quickstart
 
+[Documentation index](README.md) · [Repository entry](../README.md)
+
 ## Server
 
 Register transport-independent handlers, build a dispatcher, then choose an
@@ -105,3 +107,6 @@ type Transport interface {
 
 For notifications, return `nil, nil`. The transport must preserve the complete
 JSON-RPC payload, including batch arrays.
+
+Choose the next guide in the [documentation index](README.md)
+or return to the [repository entry](../README.md) for installation and ownership.
